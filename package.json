@@ -1,6 +1,6 @@
 {
-  "name": "create-react-app-with-typescript",
-  "version": "4.0.0",
+  "name": "cover-tracker",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@material-ui/core": "latest",

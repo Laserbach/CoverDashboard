@@ -1,6 +1,5 @@
 import { useState, useEffect, FC } from "react";
 import Protocols from "../interfaces/Protocols";
-import ProtocolData from "../interfaces/ProtocolData";
 import Chart from "../components/Chart";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
@@ -20,11 +19,6 @@ const useStyles = makeStyles({
 });
 
 interface PropsProtocol {
-  location: {
-    state: {
-      data: Protocols;
-    };
-  };
   match: {
     params: {
       cover: string;
@@ -34,15 +28,24 @@ interface PropsProtocol {
 
 const Cover: FC<PropsProtocol> = (props) => {
   const classes = useStyles();
-
-  const { id } = props.location.state.data;
-  const expirationTimestamp = props.location.state.data.expirationTimestamps[0];
+  const [protocolData, setProtocolData] = useState<Protocols>();
   const [historicData, setHistoricData] = useState();
   useEffect(() => {
-    fetch(`https://apiv1.coverprotocol.com/prices/${id}/${expirationTimestamp}`)
+    fetch(
+      `https://apiv1.coverprotocol.com/protocols/${props.match.params.cover}`
+    )
       .then((response) => response.json())
-      .then((data) => setHistoricData(data));
+      .then((data) => setProtocolData(data.data));
   }, []);
+  useEffect(() => {
+    if (protocolData) {
+      fetch(
+        `https://apiv1.coverprotocol.com/prices/${protocolData.id}/${protocolData.expirationTimestamps[0]}`
+      )
+        .then((response) => response.json())
+        .then((data) => setHistoricData(data));
+    }
+  }, [protocolData]);
   return (
     <>
       <CardMedia

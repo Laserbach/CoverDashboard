@@ -23,12 +23,7 @@ const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
   const classes = useStyles();
   return (
     <Link
-      to={{
-        pathname: `/covers/${protocolData.id.toLowerCase()}`,
-        state: {
-          data: protocolData,
-        },
-      }}
+      to={`/covers/${protocolData.id.toLowerCase()}`}
       style={{ textDecoration: "none" }}
     >
       <Card className={classes.root}>
