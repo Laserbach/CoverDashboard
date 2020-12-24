@@ -1,0 +1,53 @@
+import { FC } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import Card from "@material-ui/core/Card";
+import CardActionArea from "@material-ui/core/CardActionArea";
+import CardContent from "@material-ui/core/CardContent";
+import CardMedia from "@material-ui/core/CardMedia";
+import Typography from "@material-ui/core/Typography";
+import { Link } from "react-router-dom";
+import Protocols from "../interfaces/Protocols";
+
+const useStyles = makeStyles({
+  root: {
+    maxWidth: 345,
+    backgroundColor: "#6b7affcc",
+  },
+});
+
+interface ProtocolData {
+  protocolData: Protocols;
+}
+
+const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
+  const classes = useStyles();
+  return (
+    <Link
+      to={{
+        pathname: `/covers/${protocolData.id.toLowerCase()}`,
+        state: {
+          data: protocolData,
+        },
+      }}
+      style={{ textDecoration: "none" }}
+    >
+      <Card className={classes.root}>
+        <CardActionArea>
+          <CardMedia
+            component="img"
+            alt={protocolData.name}
+            height="140"
+            image={`${process.env.PUBLIC_URL}/images/protocols/${protocolData.id}.png`}
+          />
+          <CardContent>
+            <Typography gutterBottom variant="h5" component="h2">
+              {protocolData.name}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Link>
+  );
+};
+
+export default ProtocolCard;
