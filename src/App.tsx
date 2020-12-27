@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Drawer from "@material-ui/core/Drawer";
@@ -22,6 +22,7 @@ import {
 import Home from "./pages/Home";
 import Covers from "./pages/Covers";
 import Cover from "./pages/Cover";
+import Tools from "./pages/Tools";
 
 const drawerWidth = 240;
 
@@ -66,33 +67,20 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface Data {
-  timestamp: number;
-  claim: {
-    price: number;
-    swapVol: string;
-    liquidity: number;
-  };
-  noclaim: {
-    price: number;
-    swapVol: string;
-    liquidity: number;
-  };
-}
-
 const App: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleDrawerToggle = () => {
+  const handleDrawerToggle = (event: any) => {
+    console.log(drawer);
     setMobileOpen(!mobileOpen);
   };
 
   const drawer = (
     <div>
       <List>
-        {["Dashboard", "Covers"].map((text, index) => (
+        {["Dashboard", "Covers", "Tools"].map((text) => (
           <Link
             to={text === "Dashboard" ? "/" : `/${text.toLowerCase()}`}
             key={text}
@@ -175,7 +163,10 @@ const App: React.FC = () => {
             <Route path="/covers" exact>
               <Covers />
             </Route>
-            <Route path="/covers/:cover" exact component={Cover}></Route>
+            <Route path="/covers/:cover" exact component={Cover} />
+            <Route path="/tools" exact>
+              <Tools />
+            </Route>
           </Switch>
         </main>
       </div>

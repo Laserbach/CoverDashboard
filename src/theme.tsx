@@ -22,7 +22,7 @@ const theme = createMuiTheme({
       paper: "#21222c",
     },
     text: {
-      primary: "#Fff",
+      primary: "#fff",
     },
   },
 });
