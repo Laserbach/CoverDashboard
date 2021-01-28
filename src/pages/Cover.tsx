@@ -40,7 +40,7 @@ const Cover: FC<PropsProtocol> = (props) => {
   useEffect(() => {
     if (protocolData) {
       fetch(
-        `https://apiv1.coverprotocol.com/prices/${protocolData.id}/${protocolData.expirationTimestamps[0]}`
+        `https://apiv1.coverprotocol.com/prices/${protocolData.protocolName}/${protocolData.expirationTimestamps[0]}`
       )
         .then((response) => response.json())
         .then((data) => setHistoricData(data));

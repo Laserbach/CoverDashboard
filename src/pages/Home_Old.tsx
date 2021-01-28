@@ -22,7 +22,8 @@ const Home = () => {
   fetch("https://api.coverprotocol.com/protocol_data/production/")
       .then((response) => response.json())
     .then((data)=> {
-    //console.log(data);
+      //console.log(data);
+
     let protocolsA = data["protocols"];      
     let collateralStakedValues = [];
     //for each project in the protocols
@@ -38,11 +39,12 @@ const Home = () => {
           collateralStakedValues.push(collateralStakedValue);
       }
     }
-    console.log(collateralStakedValues);
+    //console.log(collateralStakedValues);
     });
-  
+    
+
       //.then((data)=> console.log(data.))
-    return (
+  return (
     <div>
       <Grid container spacing={3} justify="center">
         {protocols?.map((protocolData, index) => (
@@ -52,9 +54,8 @@ const Home = () => {
             key={protocolData.protocolName}
           >
           <h3>{protocolData.protocolName}</h3>
-          {/* This code not sure why doesn't work
-          <h3>{(protocolData.coverObjects.collateralStakedValue}</h3>
-             */}
+          {console.log(protocolData)}
+          {console.log(protocolData.coverObjects)}
           
           </Grid>
         ))}
@@ -62,7 +63,6 @@ const Home = () => {
 
     </div>
   );
-
 };
 // const Home = () => {
 //   return (
