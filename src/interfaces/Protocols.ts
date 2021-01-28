@@ -1,39 +1,35 @@
 export default interface Protocols {
+  protocolActive: boolean;
   claimNonce: number;
+  protocolName: string;
   protocolAddress: string;
   expirationTimestamps: number[];
+  claimRedeemDelay: number;
+  noclaimRedeemDelay: number;
   collaterals: { address: string; active: boolean }[];
   protocolTokenAddress: string;
+  protocolUrl: string;
+  protocolDisplayName: string;
   coverObjects: {
+    protocolName: string;
     coverAddress: string;
     nonce: number;
     expirationTimestamp: number;
+    collateralAddress: string;
+    collateralStakedValue: number;
     tokens: {
-      claim: {
-        address: string;
-        totalSupply: string;
-        direction: string;
+      claimAddress: string;
+      noClaimAddress: string;
+      claimTotalSupply:{
+        type: string;
+        hex: string;
       };
-      noClaim: {
-        address: string;
-        totalSupply: string;
-        direction: string;
-      };
+      noClaimTotalSupply:{
+        type: string;
+        hex: string;
+      };          
+      claimBalance: boolean;
+      noClaimBalance:boolean;
     };
-    collateral: {
-      symbol: string;
-      address: string;
-      price: number;
-      staked: number;
-      stakedUsd: number;
-    };
-  };
-  active: boolean;
-  id: string;
-  name: string;
-  url: string;
-  redeemDelay: {
-    claim: number;
-    noClaim: number;
   };
 }
