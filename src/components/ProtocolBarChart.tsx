@@ -4,8 +4,10 @@ import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush, Refe
 } from 'recharts';
 import {getMsFromTime, ONE_DAY} from "../utils/chartTimeAndType";
 import {getFilteredRecords, getRecordsNotOlderThan} from "../utils/apiDataProc";
+import Typography from '@material-ui/core/Typography';
+import Grid from "@material-ui/core/Grid";
 
-const RECORD_FILTER_SIZE = 100;
+const RECORD_FILTER_SIZE = 300;
 interface ProtocolBarChartProps {
   data: any[],
   xAxisDataKey: string,
@@ -24,7 +26,6 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
     let filterTime = msSelected / RECORD_FILTER_SIZE;
     chartData = getFilteredRecords(chartData, filterTime);
     chartData = getRecordsNotOlderThan(chartData, msSelected);
-    console.log("timestamped: "+chartData.length + "records.");
   } else if (msSelected == -1) {
     let filterTime = 1000*60*60*3;
     chartData = getFilteredRecords(chartData, filterTime);
@@ -50,6 +51,7 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
 
   return (
     <ResponsiveContainer width='100%' height={300}>
+      {(chartData.length > 0) ? (
       <BarChart data={chartData} margin={{
             top: 5, right: 50, left: 10, bottom: 5,
         }}>
@@ -62,6 +64,14 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
         <Brush dataKey={props.xAxisDataKey}  height={30} stroke={props.fillColor} tickFormatter={dateFormatter}/>
         <Bar dataKey={props.barDataKey} fill={props.fillColor} name={props.barLabel} />
       </BarChart>
+
+     ):(
+    <Grid container justify="center" alignContent="center" style={{height: "100%"}}>
+      <Typography variant="h6" gutterBottom>
+        No current data found 📉
+      </Typography>
+    </Grid>
+    )}
     </ResponsiveContainer>
   );
 };

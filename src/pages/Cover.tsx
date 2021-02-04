@@ -9,6 +9,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
 import ProtocolBarChart from '../components/ProtocolBarChart';
 import ProtocolLineChart from '../components/ProtocolLineChart';
+import ProtocolAreaChart from '../components/ProtocolAreaChart';
 import Button from "@material-ui/core/Button";
 import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
 
@@ -51,12 +52,11 @@ interface PropsProtocol {
 const Cover: FC<PropsProtocol> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
-  const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
-  const [chartTypeSelected, setChartType] = useState<string>();
-  const [chartTimeSelected, setChartTime] = useState<string>();
-  
   const chartTimes: string[] = ["1h", "1d", "1w", "30d", "all"];
   const chartTypes: string[] = ["price", "volume", "liquidity"];
+  const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
+  const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
+  const [chartTimeSelected = chartTimes[1], setChartTime] = useState<string>();
   
   const chartTimeToMs: Map<string, number> = new Map();
   chartTimeToMs.set(chartTimes[0], 1000*60*60);
@@ -87,6 +87,37 @@ const Cover: FC<PropsProtocol> = (props) => {
     return (
       <Grid item xs={7} justify="flex-end">{times}</Grid>
     );
+  }
+
+  const renderChart = (chartType: string | undefined, type: string) => {
+    if (timeseriesData) {
+      switch(chartType) {
+        case chartTypes[0]:
+          return (
+            <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
+                    lineLabel={`Price [${type.toUpperCase()}]`}/>
+          );
+        case chartTypes[1]:
+          return (
+            <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey={`${type.toLowerCase()}.swapVol`}
+                  barLabel={`Volume [${type.toUpperCase()}]`}/>
+          );
+        case chartTypes[2]:
+          return (
+            <ProtocolAreaChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" areaDataKey={`${type.toLowerCase()}.liquidity`}
+                    areaLabel={`Liquidity [${type.toUpperCase()}]`}/>
+          );
+        default:
+          return (
+            <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
+                    lineLabel={`Price [${type.toUpperCase()}]`}/>
+          );
+      }
+    }
   }
 
   useEffect(() => {
@@ -123,56 +154,14 @@ const Cover: FC<PropsProtocol> = (props) => {
               </Grid>
             </Grid>
             <Grid container justify="space-between" alignItems="center">
-              <ListChartTypes color="primary" />
-              <ListChartTimes color="primary" />
-              <Grid item xs={12}>
-                <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
-                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey="claim.swapVol"
-                  barLabel="Volume [CLAIM]"/>
-              </Grid>
+            <ListChartTypes color="primary" />
+            <ListChartTimes color="primary" />
+            <Grid item xs={12}>
+              {renderChart(chartTypeSelected, "CLAIM")}
             </Grid>
+          </Grid>
           </Paper>
         </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>
-              <Grid container justify="center">
-                <Grid item>
-                <Typography variant="h5" gutterBottom>
-                NOCLAIM Token [{props.match.params.cover.toUpperCase()}/NOCLAIM]
-                </Typography>
-                </Grid>
-              </Grid>
-              <Grid container justify="space-between" alignItems="center">
-                <ListChartTypes color="secondary" />
-                <ListChartTimes color="secondary" />
-                <Grid item xs={12}>
-                  <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
-                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey="noclaim.swapVol"
-                    barLabel="Volume [NOCLAIM]"/>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>
-              <Grid container justify="center">
-                <Grid item>
-                <Typography variant="h5" gutterBottom>
-                  CLAIM Token [{props.match.params.cover.toUpperCase()}/CLAIM]
-                </Typography>
-                </Grid>
-              </Grid>
-              <Grid container justify="space-between" alignItems="center">
-                <ListChartTypes color="primary" />
-                <ListChartTimes color="primary" />
-                <Grid item xs={12}>
-                  <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
-                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey="claim.price"
-                    lineLabel="Price [CLAIM]"/>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
           <Grid item xs={12} sm={6}>
             <Paper className={classes.paper}>
               <Grid container justify="center">
@@ -186,18 +175,10 @@ const Cover: FC<PropsProtocol> = (props) => {
                 <ListChartTypes color="secondary" />
                 <ListChartTimes color="secondary" />
                 <Grid item xs={12}>
-                  <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
-                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey="noclaim.price"
-                    lineLabel="Price [NOCLAIM]"/>
+                {renderChart(chartTypeSelected, "NOCLAIM")}
                 </Grid>
               </Grid>
             </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>xs=12 sm=6</Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>xs=12 sm=6</Paper>
           </Grid>
         </Grid>
         <pre>Data: {JSON.stringify(timeseriesData, null, 2)}
