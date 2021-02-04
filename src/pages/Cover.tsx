@@ -1,13 +1,12 @@
 import { useState, useEffect, FC } from "react";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import Grid from "@material-ui/core/Grid";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import { makeStyles, createStyles, Theme, useTheme  } from "@material-ui/core/styles";
 import Paper from '@material-ui/core/Paper';
 import api from "../utils/api.json";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush, ReferenceLine
 } from 'recharts';
-
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -15,16 +14,15 @@ const useStyles = makeStyles((theme: Theme) => (
       backgroundColor: "#3a3c4d",
       flexGrow: 1,
     },
-    media: {
-      width: "200px",
-      marginBottom: "20px",
-    },
     paper: {
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.primary,
       marginLeft: "20px",
       marginRight: "20px",
+    },
+    tooltip: {
+      color: theme.palette.text.secondary,
     }
   })
 ));
@@ -46,8 +44,8 @@ const Cover: FC<PropsProtocol> = (props) => {
   const poolIDNoClaim = "0xd9b92e84b9f96267bf548cfe3a3ae21773872138";
   const poolIDClaim = "0xdfe5ead7bd050eb74009e7717000eeadcf0f18db";
 
-  const dateFormatter = (date: number) => {
-    return new Date(date).toDateString();
+  const dateFormatter = (date: number | any) => {
+    return new Date(date).toLocaleDateString("en-US");
   };
 
   const volFormatter = (vol: number) => {
@@ -57,6 +55,25 @@ const Cover: FC<PropsProtocol> = (props) => {
   const tooltipFormatter = (value: any, name: any, props: any) => {
     return [Math.round(value), "Volume [CLAIM]"];
   }
+
+  const brushFormatter = (date: number) => {
+    return new Date(date).toLocaleDateString("en-US");
+  }
+
+  const CustomTooltip = (active: boolean, payload: any, label: string) => {
+    if (active) {
+      return (
+        <div className="custom-tooltip">
+          <p className="intro">{label}</p>
+          <p className="label">{`${payload[0].value} Volume [CLAIM]`}</p>
+          <p className="desc">Anything you want can be displayed here.</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const myTheme = useTheme();
 
   useEffect(() => {
     fetch(
@@ -71,7 +88,7 @@ const Cover: FC<PropsProtocol> = (props) => {
             let objs: TimeseriesRecord[] = []
             let lastTimestamp: number = 0
             for (let record of data["Items"]) {
-              if(Math.abs(lastTimestamp - record.timestamp) >= 3600000) {
+              if(Math.abs(lastTimestamp - record.timestamp) >= 7200000) {
                 objs.push({
                   timestamp: record.timestamp,
                   claim: {
@@ -104,14 +121,14 @@ const Cover: FC<PropsProtocol> = (props) => {
       <Grid item xs={12} sm={6} justify="center" alignItems="center">
         <Paper className={classes.paper}>
           <Grid container justify="center" alignItems="center">
-            <BarChart width={700} height={250} data={timeseriesData}>
-              <CartesianGrid strokeDasharray="4 4" />
-              <XAxis dataKey="timestamp" tickFormatter={dateFormatter} />
-              <YAxis type="number" domain={['dataMin - 10', 'dataMax + 10']} tickFormatter={volFormatter} />
-              <Tooltip formatter={tooltipFormatter} />
+            <BarChart width={650} height={250} data={timeseriesData} margin={{right: 10, left: 10}}>
+              <CartesianGrid strokeDasharray="5 5" />
+              <XAxis stroke={myTheme.palette.primary.light} dataKey="timestamp" tickFormatter={dateFormatter} minTickGap={50} />
+              <YAxis stroke={myTheme.palette.primary.light} type="number" domain={['dataMin - 10', 'dataMax + 10']} tickFormatter={volFormatter} minTickGap={50} />
+              <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={dateFormatter} />
               <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
               <ReferenceLine y={0} stroke="#000" />
-              <Brush dataKey="timestamp" height={30} stroke="#8884d8" />
+              <Brush dataKey="timestamp" x={130} width={400} height={30} stroke="#8884d8" tickFormatter={brushFormatter}/>
               <Bar dataKey="claim.swapVol" fill="#8884d8" name="Volume [CLAIM]" />
             </BarChart>
           </Grid>
