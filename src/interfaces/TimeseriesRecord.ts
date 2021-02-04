@@ -1,4 +1,4 @@
-export default interface ProtocolData {
+export default interface TimeseriesRecord {
   timestamp: number;
   claim: {
     price: number;

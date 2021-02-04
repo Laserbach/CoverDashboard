@@ -23,15 +23,14 @@ const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
   const classes = useStyles();
   return (
     <Link
-    to='test'
-    //   to={`/covers/${protocolData.id.toLowerCase()}`}
+       to={`/covers/${protocolData.protocolName.toLowerCase()}`}
        style={{ textDecoration: "none" }}
      >
       <Card className={classes.root}>
         <CardActionArea>
           <CardMedia
             component="img"
-            alt={'test'}
+            alt={`${protocolData.protocolName} protocol icon`}
             height="140"
             image={`${process.env.PUBLIC_URL}/images/protocols/${protocolData.protocolName}.png`}
           />

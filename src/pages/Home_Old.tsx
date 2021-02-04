@@ -1,6 +1,6 @@
 import { FC } from "react";
 import Chart from "../components/Chart";
-import ProtocolData from "../interfaces/ProtocolData";
+import ProtocolData from "../interfaces/TimeseriesRecord";
 import { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 //import ProtocolCard from "../components/ProtocolCard";
