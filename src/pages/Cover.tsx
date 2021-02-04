@@ -3,10 +3,12 @@ import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import Grid from "@material-ui/core/Grid";
 import { makeStyles, createStyles, Theme, useTheme  } from "@material-ui/core/styles";
 import Paper from '@material-ui/core/Paper';
+import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
 import ProtocolBarChart from '../components/ProtocolBarChart';
+import ProtocolLineChart from '../components/ProtocolLineChart';
 import Button from "@material-ui/core/Button";
 import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
 
@@ -27,6 +29,13 @@ const useStyles = makeStyles((theme: Theme) => (
     },
     tooltip: {
       color: theme.palette.text.secondary,
+    },
+    avatar: {
+      marginBottom: "10px",
+      marginRight: "25px"
+    },
+    heading: {
+      paddingTop: "10px"
     }
   })
 ));
@@ -56,10 +65,10 @@ const Cover: FC<PropsProtocol> = (props) => {
   chartTimeToMs.set(chartTimes[3], 1000*60*60*24*30);
   chartTimeToMs.set(chartTimes[4], -1);
 
-  const ListChartTypes = () => {
+  const ListChartTypes = (props: any) => {
     const types = chartTypes.map((chartType) =>
-      <Button key={chartType} variant={(chartTypeSelected === chartType) ? "contained" : "outlined"} color="primary" size="small"
-        onClick={() => setChartType(chartType)}>
+      <Button key={chartType} variant={(chartTypeSelected === chartType) ? "contained" : "outlined"} color={props.color} 
+        size="small" onClick={() => setChartType(chartType)}>
         {chartType}
       </Button>
     );
@@ -68,10 +77,10 @@ const Cover: FC<PropsProtocol> = (props) => {
     );
   }
 
-  const ListChartTimes = () => {
+  const ListChartTimes = (props: any) => {
     const times = chartTimes.map((chartTime) =>
-      <Button key={chartTime} variant={(chartTimeSelected === chartTime) ? "contained" : "outlined"} color="primary" size="small"
-        onClick={() => setChartTime(chartTime)}>
+      <Button key={chartTime} variant={(chartTimeSelected === chartTime) ? "contained" : "outlined"} color={props.color} 
+        size="small" onClick={() => setChartTime(chartTime)}>
         {chartTime}
       </Button>
     );
@@ -96,9 +105,12 @@ const Cover: FC<PropsProtocol> = (props) => {
         <Grid container spacing={3} justify="space-evenly">
         <Grid item xs={12}>
             <Paper className={classes.paper}>
-              <Typography variant="h4" gutterBottom>
-                  {props.match.params.cover.toUpperCase()} Token
-              </Typography>
+              <Grid className={classes.heading} container justify="center" alignItems="center">
+                <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={`${process.env.PUBLIC_URL}/images/protocols/${props.match.params.cover}.png`}/>
+                <Typography variant="h4" gutterBottom>
+                      {props.match.params.cover.toUpperCase()} Token
+                </Typography>
+              </Grid>           
             </Paper>
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -111,24 +123,75 @@ const Cover: FC<PropsProtocol> = (props) => {
               </Grid>
             </Grid>
             <Grid container justify="space-between" alignItems="center">
-              <ListChartTypes />
-              <ListChartTimes />
+              <ListChartTypes color="primary" />
+              <ListChartTimes color="primary" />
               <Grid item xs={12}>
                 <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
-                chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey="claim.swapVol"
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey="claim.swapVol"
                   barLabel="Volume [CLAIM]"/>
               </Grid>
             </Grid>
           </Paper>
         </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>xs=12 sm=6</Paper>
+            <Paper className={classes.paper}>
+              <Grid container justify="center">
+                <Grid item>
+                <Typography variant="h5" gutterBottom>
+                NOCLAIM Token [{props.match.params.cover.toUpperCase()}/NOCLAIM]
+                </Typography>
+                </Grid>
+              </Grid>
+              <Grid container justify="space-between" alignItems="center">
+                <ListChartTypes color="secondary" />
+                <ListChartTimes color="secondary" />
+                <Grid item xs={12}>
+                  <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey="noclaim.swapVol"
+                    barLabel="Volume [NOCLAIM]"/>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>xs=12 sm=6</Paper>
+            <Paper className={classes.paper}>
+              <Grid container justify="center">
+                <Grid item>
+                <Typography variant="h5" gutterBottom>
+                  CLAIM Token [{props.match.params.cover.toUpperCase()}/CLAIM]
+                </Typography>
+                </Grid>
+              </Grid>
+              <Grid container justify="space-between" alignItems="center">
+                <ListChartTypes color="primary" />
+                <ListChartTimes color="primary" />
+                <Grid item xs={12}>
+                  <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey="claim.price"
+                    lineLabel="Price [CLAIM]"/>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper}>xs=12 sm=6</Paper>
+            <Paper className={classes.paper}>
+              <Grid container justify="center">
+                <Grid item>
+                <Typography variant="h5" gutterBottom>
+                  NOCLAIM Token [{props.match.params.cover.toUpperCase()}/NOCLAIM]
+                </Typography>
+                </Grid>
+              </Grid>
+              <Grid container justify="space-between" alignItems="center">
+                <ListChartTypes color="secondary" />
+                <ListChartTimes color="secondary" />
+                <Grid item xs={12}>
+                  <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
+                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey="noclaim.price"
+                    lineLabel="Price [NOCLAIM]"/>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
             <Paper className={classes.paper}>xs=12 sm=6</Paper>
