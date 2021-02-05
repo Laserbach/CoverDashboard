@@ -56,7 +56,7 @@ const Cover: FC<PropsProtocol> = (props) => {
   const chartTypes: string[] = ["price", "volume", "liquidity"];
   const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
-  const [chartTimeSelected = chartTimes[1], setChartTime] = useState<string>();
+  const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
   
   const chartTimeToMs: Map<string, number> = new Map();
   chartTimeToMs.set(chartTimes[0], 1000*60*60);
@@ -96,25 +96,25 @@ const Cover: FC<PropsProtocol> = (props) => {
           return (
             <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
-                    lineLabel={`Price [${type.toUpperCase()}]`}/>
+                    lineLabel={`Price [USD]`}/>
           );
         case chartTypes[1]:
           return (
             <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey={`${type.toLowerCase()}.swapVol`}
-                  barLabel={`Volume [${type.toUpperCase()}]`}/>
+                  barLabel={`Volume [USD]`}/>
           );
         case chartTypes[2]:
           return (
             <ProtocolAreaChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" areaDataKey={`${type.toLowerCase()}.liquidity`}
-                    areaLabel={`Liquidity [${type.toUpperCase()}]`}/>
+                    areaLabel={`Liquidity [USD]`}/>
           );
         default:
           return (
             <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
-                    lineLabel={`Price [${type.toUpperCase()}]`}/>
+                    lineLabel={`Price [USD]`}/>
           );
       }
     }

@@ -36,7 +36,7 @@ const ProtocolBarChart: FC<ProtocolLineChartProps> = (props) => {
   }
 
   const numberFormatter = (price: number) => {
-    return Number(price.toFixed(4));
+    return Number(price.toFixed(4)) + "$";
   };
 
   const dateFormatter = (timestamp: number | any) => {
@@ -61,7 +61,7 @@ const ProtocolBarChart: FC<ProtocolLineChartProps> = (props) => {
         <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={dateFormatter} />
         <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
         <Brush dataKey={props.xAxisDataKey}  height={30} stroke={props.fillColor} tickFormatter={dateFormatter}/>
-        <Line dot={false} type="monotone" dataKey={props.lineDataKey} stroke={props.fillColor} name={props.lineLabel}  />
+        <Line dot={false} type="monotone" dataKey={props.lineDataKey} stroke={props.fillColor} name={props.lineLabel} />
       </LineChart>
       ):(
         <Grid container justify="center" alignContent="center" style={{height: "100%"}}>

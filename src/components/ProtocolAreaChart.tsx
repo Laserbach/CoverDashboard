@@ -37,7 +37,7 @@ const ProtocolBarChart: FC<ProtocolAreaChartProps> = (props) => {
   }
 
   const numberFormatter = (price: number) => {
-    return Number(price.toFixed(0));
+    return Number(price.toFixed(2)) + "$";
   };
 
   const dateFormatter = (timestamp: number | any) => {

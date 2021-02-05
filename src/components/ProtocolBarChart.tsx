@@ -7,7 +7,7 @@ import {getFilteredRecords, getRecordsNotOlderThan} from "../utils/apiDataProc";
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
 
-const RECORD_FILTER_SIZE = 300;
+const RECORD_FILTER_SIZE = 10000;
 interface ProtocolBarChartProps {
   data: any[],
   xAxisDataKey: string,
@@ -23,12 +23,7 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
   const msSelected = getMsFromTime(props.chartTime);
 
   if (msSelected > 0) {
-    let filterTime = msSelected / RECORD_FILTER_SIZE;
-    chartData = getFilteredRecords(chartData, filterTime);
     chartData = getRecordsNotOlderThan(chartData, msSelected);
-  } else if (msSelected == -1) {
-    let filterTime = 1000*60*60*3;
-    chartData = getFilteredRecords(chartData, filterTime);
   }
 
   const tooltipFormatter = (value: any, name: any, propsTT: any) => {
@@ -36,7 +31,7 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
   }
 
   const numberFormatter = (vol: number) => {
-    return Math.round(vol);
+    return Number(vol.toFixed(2)) + "$";
   };
 
   const dateFormatter = (timestamp: number | any) => {
@@ -57,7 +52,7 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
         }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis stroke={props.textColor} dataKey={props.xAxisDataKey} tickFormatter={dateFormatter} minTickGap={50} />
-        <YAxis stroke={props.textColor} type="number" domain={['dataMin - 10', 'dataMax + 10']} tickFormatter={numberFormatter} minTickGap={50} />
+        <YAxis stroke={props.textColor} type="number" domain={[dataMin => (dataMin*0.9), dataMax => (dataMax * 1.1)]} tickFormatter={numberFormatter} minTickGap={50} />
         <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={dateFormatter} />
         <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
         <ReferenceLine y={0} stroke="#000" />

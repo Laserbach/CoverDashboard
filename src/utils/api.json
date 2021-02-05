@@ -1,4 +1,5 @@
 {
     "base_url": "https://api.coverprotocol.com/protocol_data/production/",
-    "timeseries_data_all": "https://api.coverprotocol.com/protocol_data/production/getV1TimeseriesData?startTimestamp=0&endTimestamp=99999999999999999999&protocol="
+    "timeseries_data_all": "https://api.coverprotocol.com/protocol_data/production/getV1TimeseriesData?startTimestamp=0&endTimestamp=99999999999999999999&protocol=",
+    "pool_base_url": "https://pools.balancer.exchange/#/pool/"
 }
