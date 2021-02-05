@@ -3,11 +3,15 @@ export default interface TimeseriesRecord {
   claim: {
     price: number;
     swapVol: number;
+    swapVolCum: number;
     liquidity: number;
+    poolId: string;
   };
   noclaim: {
     price: number;
     swapVol: number;
+    swapVolCum: number;
     liquidity: number;
+    poolId: string;
   };
 }

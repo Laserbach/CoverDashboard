@@ -11,6 +11,7 @@ import ProtocolBarChart from '../components/ProtocolBarChart';
 import ProtocolLineChart from '../components/ProtocolLineChart';
 import ProtocolAreaChart from '../components/ProtocolAreaChart';
 import Button from "@material-ui/core/Button";
+import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
 
 const useStyles = makeStyles((theme: Theme) => (
@@ -37,6 +38,9 @@ const useStyles = makeStyles((theme: Theme) => (
     },
     heading: {
       paddingTop: "10px"
+    },
+    infoCard : {
+      margin: 0
     }
   })
 ));
@@ -54,6 +58,7 @@ const Cover: FC<PropsProtocol> = (props) => {
   const theme = useTheme();
   const chartTimes: string[] = ["1h", "1d", "1w", "30d", "all"];
   const chartTypes: string[] = ["price", "volume", "liquidity"];
+  const swapFeePercent: number = 0.01;
   const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
   const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
@@ -73,7 +78,7 @@ const Cover: FC<PropsProtocol> = (props) => {
       </Button>
     );
     return (
-      <Grid item xs={5} justify="flex-start">{types}</Grid>
+      <Grid item xs={5} justify="flex-start" container>{types}</Grid>
     );
   }
 
@@ -85,7 +90,7 @@ const Cover: FC<PropsProtocol> = (props) => {
       </Button>
     );
     return (
-      <Grid item xs={7} justify="flex-end">{times}</Grid>
+      <Grid item xs={7} justify="flex-end" container>{times}</Grid>
     );
   }
 
@@ -120,6 +125,65 @@ const Cover: FC<PropsProtocol> = (props) => {
     }
   }
 
+  const renderChartInfo = (type: string, records: TimeseriesRecord[]) => {
+    type = type.toLowerCase();
+    if (type === "claim" || type === "noclaim") {
+      return (
+        <Grid container justify="space-between">
+          <Grid item xs={12} sm={12}>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>
+              <Grid container justify="space-between" alignContent="center">
+                <p className={classes.infoCard}>Total Volume</p>
+                <p className={classes.infoCard}>{volumeFormatter(getNewestRecord(records)[type].swapVolCum)}</p>
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>
+              <Grid container justify="space-between" alignContent="center">
+                <p className={classes.infoCard}>Swap Fees</p>
+                <p className={classes.infoCard}>{percentFormatter(swapFeePercent)}</p>
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>
+              <Grid container justify="space-between" alignContent="center">
+                <p className={classes.infoCard}>Total Amount of Swap Fees</p>
+                <p className={classes.infoCard}>{volumeFormatter(getNewestRecord(records)[type].swapVolCum*swapFeePercent)}</p>
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper className={classes.paper} style={{marginTop: "10px"}} >Total Amount in Wallets</Paper>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper className={classes.paper} style={{marginTop: "10px"}} >Total Amount in Pools</Paper>
+          </Grid>
+        </Grid>
+      );
+    } else {
+      return (
+        <div></div>
+        );
+    }
+  }
+
+  const volumeFormatter = (vol: number) => {
+    // no idea why js won't see it as a number unless I multiply by 1
+    vol = vol *1;
+    return `${Number(vol.toFixed(2))}$`;
+  }
+
+  const percentFormatter = (percent: number) => {
+    percent = percent * 100;
+    return `${Number(percent.toFixed(2))}%`
+  }
+
+  const getNewestRecord = (records: TimeseriesRecord[]) => {
+    return records[records.length-1];
+  }
+
   useEffect(() => {
     fetch(
       `${api.timeseries_data_all+props.match.params.cover}`
@@ -134,51 +198,61 @@ const Cover: FC<PropsProtocol> = (props) => {
       {timeseriesData ? (
         <div>
         <Grid container spacing={3} justify="space-evenly">
-        <Grid item xs={12}>
-            <Paper className={classes.paper}>
-              <Grid className={classes.heading} container justify="center" alignItems="center">
-                <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={`${process.env.PUBLIC_URL}/images/protocols/${props.match.params.cover}.png`}/>
-                <Typography variant="h4" gutterBottom>
-                      {props.match.params.cover.toUpperCase()} Token
-                </Typography>
-              </Grid>           
-            </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper className={classes.paper}>
-            <Grid container justify="center">
-              <Grid item>
-              <Typography variant="h5" gutterBottom>
-                CLAIM Token [{props.match.params.cover.toUpperCase()}/CLAIM]
-              </Typography>
-              </Grid>
-            </Grid>
-            <Grid container justify="space-between" alignItems="center">
-            <ListChartTypes color="primary" />
-            <ListChartTimes color="primary" />
-            <Grid item xs={12}>
-              {renderChart(chartTypeSelected, "CLAIM")}
-            </Grid>
+          <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <Grid className={classes.heading} container justify="center" alignItems="center">
+                  <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={`${process.env.PUBLIC_URL}/images/protocols/${props.match.params.cover}.png`}/>
+                  <Typography variant="h4" gutterBottom>
+                        {props.match.params.cover.toUpperCase()} Token
+                  </Typography>
+                </Grid>           
+              </Paper>
           </Grid>
-          </Paper>
-        </Grid>
           <Grid item xs={12} sm={6}>
             <Paper className={classes.paper}>
               <Grid container justify="center">
                 <Grid item>
-                <Typography variant="h5" gutterBottom>
+                  <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).claim.poolId}>
+                    <Typography variant="h5" gutterBottom>
+                      CLAIM Token [{props.match.params.cover.toUpperCase()}/CLAIM]
+                    </Typography>
+                  </Link>
+                  </Grid>
+                </Grid>
+                <Grid container justify="space-between" alignItems="center">
+                <ListChartTypes color="primary" />
+                <ListChartTimes color="primary" />
+                <Grid item xs={12}>
+                  {renderChart(chartTypeSelected, "CLAIM")}
+                </Grid>
+              </Grid>
+            </Paper>
+            <Grid item xs={12} container justify="space-between">
+              {renderChartInfo("claim", timeseriesData)}
+            </Grid>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Paper className={classes.paper}>
+              <Grid container justify="center">
+                <Grid item>
+                <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
+                  <Typography variant="h5" gutterBottom>
                   NOCLAIM Token [{props.match.params.cover.toUpperCase()}/NOCLAIM]
                 </Typography>
+                </Link>
                 </Grid>
               </Grid>
               <Grid container justify="space-between" alignItems="center">
                 <ListChartTypes color="secondary" />
                 <ListChartTimes color="secondary" />
                 <Grid item xs={12}>
-                {renderChart(chartTypeSelected, "NOCLAIM")}
+                  {renderChart(chartTypeSelected, "NOCLAIM")}
                 </Grid>
               </Grid>
             </Paper>
+            <Grid item xs={12} container justify="space-between">
+              {renderChartInfo("noclaim", timeseriesData)}
+            </Grid>
           </Grid>
         </Grid>
         <pre>Data: {JSON.stringify(timeseriesData, null, 2)}
