@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import ProtocolCard from "../components/ProtocolCard";
 import Protocols from "../interfaces/Protocols";
+import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
 
 const Covers = () => {
@@ -17,7 +18,8 @@ const Covers = () => {
   }, []);
   return (
     <div>
-      <Grid container spacing={3} justify="center">
+      {protocols ? (
+        <Grid container spacing={3} justify="center">
         {protocols?.map((protocolData, index) => (
           <Grid
             item
@@ -28,6 +30,9 @@ const Covers = () => {
           </Grid>
         ))}
       </Grid>
+      ) : (
+        <LinearProgress color="primary" />
+      )}
     </div>
   );
 };
