@@ -13,6 +13,7 @@ import ProtocolAreaChart from '../components/ProtocolAreaChart';
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
+import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -56,19 +57,12 @@ interface PropsProtocol {
 const Cover: FC<PropsProtocol> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
-  const chartTimes: string[] = ["1h", "1d", "1w", "30d", "all"];
-  const chartTypes: string[] = ["price", "volume", "liquidity"];
+  const chartTimes: string[] = getAllTimes();
+  const chartTypes: string[] = getAllTypes();
   const swapFeePercent: number = 0.01;
   const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
   const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
-  
-  const chartTimeToMs: Map<string, number> = new Map();
-  chartTimeToMs.set(chartTimes[0], 1000*60*60);
-  chartTimeToMs.set(chartTimes[1], 1000*60*60*24);
-  chartTimeToMs.set(chartTimes[2], 1000*60*60*24*7);
-  chartTimeToMs.set(chartTimes[3], 1000*60*60*24*30);
-  chartTimeToMs.set(chartTimes[4], -1);
 
   const ListChartTypes = (props: any) => {
     const types = chartTypes.map((chartType) =>
@@ -138,15 +132,7 @@ const Cover: FC<PropsProtocol> = (props) => {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper} style={{marginTop: "10px"}}>
-              <Grid container justify="space-between" alignContent="center">
-                <p className={classes.infoCard}>Swap Fees</p>
-                <p className={classes.infoCard}>{percentFormatter(swapFeePercent)}</p>
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={12}>
             <Paper className={classes.paper} style={{marginTop: "10px"}}>
               <Grid container justify="space-between" alignContent="center">
                 <p className={classes.infoCard}>Total Amount of Swap Fees</p>
@@ -208,13 +194,13 @@ const Cover: FC<PropsProtocol> = (props) => {
                 </Grid>           
               </Paper>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} md={6}>
             <Paper className={classes.paper}>
               <Grid container justify="center">
                 <Grid item>
                   <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).claim.poolId}>
                     <Typography variant="h5" gutterBottom>
-                      CLAIM Token [{props.match.params.cover.toUpperCase()}/CLAIM]
+                      CLAIM Token
                     </Typography>
                   </Link>
                   </Grid>
@@ -231,13 +217,13 @@ const Cover: FC<PropsProtocol> = (props) => {
               {renderChartInfo("claim", timeseriesData)}
             </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} md={6}>
             <Paper className={classes.paper}>
               <Grid container justify="center">
                 <Grid item>
                 <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
                   <Typography variant="h5" gutterBottom>
-                  NOCLAIM Token [{props.match.params.cover.toUpperCase()}/NOCLAIM]
+                  NOCLAIM Token
                 </Typography>
                 </Link>
                 </Grid>

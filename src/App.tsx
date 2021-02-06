@@ -73,7 +73,6 @@ const App: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = (event: any) => {
-    console.log(drawer);
     setMobileOpen(!mobileOpen);
   };
 
