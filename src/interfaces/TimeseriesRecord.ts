@@ -14,4 +14,5 @@ export default interface TimeseriesRecord {
     liquidity: number;
     poolId: string;
   };
+  collateralStakedValue: number;
 }

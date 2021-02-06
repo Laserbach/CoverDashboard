@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush, ReferenceLine, ResponsiveContainer
 } from 'recharts';
 import {getMsFromTime, ONE_DAY} from "../utils/chartTimeAndType";
@@ -15,7 +14,8 @@ interface ProtocolBarChartProps {
   barLabel: string,
   chartTime: string,
   textColor: string,
-  fillColor: string
+  fillColor: string,
+  filtering: boolean,
 }
 
 const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
@@ -24,11 +24,15 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
 
   if (msSelected > 0) {
     let filterTime = msSelected / RECORD_FILTER_SIZE;
-    chartData = getFilteredRecords(chartData, filterTime);
+    if (props.filtering === true) {
+      chartData = getFilteredRecords(chartData, filterTime);
+    }
     chartData = getRecordsNotOlderThan(chartData, msSelected);
   } else if (msSelected == -1) {
-    let filterTime = 1000*60*60*3;
-    chartData = getFilteredRecords(chartData, filterTime);
+    if (props.filtering === true) {
+      let filterTime = 1000*60*60*3;
+      chartData = getFilteredRecords(chartData, filterTime);
+    }
   }
 
   const tooltipFormatter = (value: any, name: any, propsTT: any) => {

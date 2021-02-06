@@ -14,6 +14,7 @@ import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
+import {formatCurrency} from "../utils/formatting";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -101,7 +102,7 @@ const Cover: FC<PropsProtocol> = (props) => {
           return (
             <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey={`${type.toLowerCase()}.swapVol`}
-                  barLabel={`Volume [USD]`}/>
+                  barLabel={`Volume [USD]`} filtering={false} />
           );
         case chartTypes[2]:
           return (
@@ -128,7 +129,7 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper} style={{marginTop: "10px"}}>
               <Grid container justify="space-between" alignContent="center">
                 <p className={classes.infoCard}>Total Volume</p>
-                <p className={classes.infoCard}>{volumeFormatter(getNewestRecord(records)[type].swapVolCum)}</p>
+                <p className={classes.infoCard}>{formatCurrency(getNewestRecord(records)[type].swapVolCum)}</p>
               </Grid>
             </Paper>
           </Grid>
@@ -136,15 +137,15 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper} style={{marginTop: "10px"}}>
               <Grid container justify="space-between" alignContent="center">
                 <p className={classes.infoCard}>Total Amount of Swap Fees</p>
-                <p className={classes.infoCard}>{volumeFormatter(getNewestRecord(records)[type].swapVolCum*swapFeePercent)}</p>
+                <p className={classes.infoCard}>{formatCurrency(getNewestRecord(records)[type].swapVolCum*swapFeePercent)}</p>
               </Grid>
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper} style={{marginTop: "10px"}} >Total Amount in Wallets</Paper>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>Total Amount in Wallets</Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper} style={{marginTop: "10px"}} >Total Amount in Pools</Paper>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>Total Amount in Pools</Paper>
           </Grid>
         </Grid>
       );
@@ -182,7 +183,7 @@ const Cover: FC<PropsProtocol> = (props) => {
   return (
     <div>
       {timeseriesData ? (
-        <div>
+      <div>
         <Grid container spacing={3} justify="space-evenly">
           <Grid item xs={12}>
               <Paper className={classes.paper}>
