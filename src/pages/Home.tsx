@@ -118,6 +118,7 @@ const Home = () => {
         // filter out non-active protocols
         let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
         setProtocols(filteredProtocols);
+        console.log(filteredProtocols);
         
         fetchAndSetCoverageDemands(filteredProtocols, data);
 

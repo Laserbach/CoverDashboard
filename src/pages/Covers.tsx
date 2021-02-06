@@ -13,7 +13,6 @@ const Covers = () => {
       .then((response) => response.json())
       .then((data) => {
         setProtocols(data.protocols.filter((protocol: Protocols) => protocol.protocolName));
-        // console.log(data);
       })
   }, []);
   return (

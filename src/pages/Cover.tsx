@@ -12,9 +12,10 @@ import ProtocolLineChart from '../components/ProtocolLineChart';
 import ProtocolAreaChart from '../components/ProtocolAreaChart';
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
-import {apiDataToTimeseriesRecords} from "../utils/apiDataProc";
+import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/apiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 import {formatCurrency} from "../utils/formatting";
+import Protocols from "../interfaces/Protocols";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -55,6 +56,17 @@ interface PropsProtocol {
   };
 }
 
+interface tokensInWalletsAndPools {
+  claim: {
+    pool: number,
+    wallet: number
+  },
+  noclaim: {
+    pool: number,
+    wallet: number
+  }
+}
+
 const Cover: FC<PropsProtocol> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -64,6 +76,8 @@ const Cover: FC<PropsProtocol> = (props) => {
   const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
   const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
+  const [tokens, setTokensInWalletsAndPools] = useState<tokensInWalletsAndPools>();
+  
 
   const ListChartTypes = (props: any) => {
     const types = chartTypes.map((chartType) =>
@@ -142,10 +156,28 @@ const Cover: FC<PropsProtocol> = (props) => {
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper} style={{marginTop: "10px"}}>Total Amount in Wallets</Paper>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>
+              <Grid container justify="space-between" alignContent="center">
+                  <p className={classes.infoCard}>Total Amount in Wallets</p>
+                  {tokens ? (
+                    <p className={classes.infoCard}>{formatCurrency(tokens[type].wallet)}</p>
+                  ): (
+                    <LinearProgress color="primary" />
+                  )}
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Paper className={classes.paper} style={{marginTop: "10px"}}>Total Amount in Pools</Paper>
+            <Paper className={classes.paper} style={{marginTop: "10px"}}>
+              <Grid container justify="space-between" alignContent="center">
+                  <p className={classes.infoCard}>Total Amount in Pools</p>
+                  {tokens ? (
+                    <p className={classes.infoCard}>{formatCurrency(tokens[type].pool)}</p>
+                  ): (
+                    <LinearProgress color="primary" />
+                  )}
+              </Grid>
+            </Paper>
           </Grid>
         </Grid>
       );
@@ -156,28 +188,76 @@ const Cover: FC<PropsProtocol> = (props) => {
     }
   }
 
-  const volumeFormatter = (vol: number) => {
-    // no idea why js won't see it as a number unless I multiply by 1
-    vol = vol *1;
-    return `${Number(vol.toFixed(2))}$`;
-  }
-
-  const percentFormatter = (percent: number) => {
-    percent = percent * 100;
-    return `${Number(percent.toFixed(2))}%`
-  }
-
   const getNewestRecord = (records: TimeseriesRecord[]) => {
     return records[records.length-1];
   }
 
   useEffect(() => {
-    fetch(
-      `${api.timeseries_data_all+props.match.params.cover}`
-    )
+    fetch(`${api.timeseries_data_all+props.match.params.cover}`)
       .then((response) => response.json())
       .then((data) => {
         setTimeseriesData(apiDataToTimeseriesRecords(data))
+      });
+    fetch(api.base_url)
+      .then((response) => response.json())
+      .then((data) => {
+        let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
+        let selectedProtocol = filteredProtocols.find(p => p.protocolName.toLowerCase() === props.match.params.cover.toLowerCase());
+        if(selectedProtocol === undefined) return;
+        let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, true, data.poolData);
+        let [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, false, data.poolData);
+        let pools = [poolIdClaim, poolIdNoClaim];
+        let graphRequests = pools.map(poolId => fetch(api.the_graph_base_url, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({query: `{
+            pool (id: "${poolId}") {
+              totalSwapVolume
+              totalSwapFee
+              tokens {
+                symbol
+                address
+                balance
+              }
+            }
+          }`})
+        }));
+
+        Promise.all(graphRequests)
+          .then((responses) => {
+          Promise.all(responses.map(r=>r.json()))
+            .then(allGraphData => {
+              let balanceClaim = 0;
+              let balanceNoClaim = 0;
+
+              for(let graphData of allGraphData) {
+                for(let token of graphData.data.pool.tokens) {
+                  if(token.symbol.indexOf(`_${props.match.params.cover.toUpperCase()}_`) > -1) {
+                    if(token.symbol.indexOf(`_CLAIM`) > -1) {
+                      balanceClaim = token.balance;
+                    } else if (token.symbol.indexOf(`_NOCLAIM`) > -1) {
+                      balanceNoClaim = token.balance;
+                    }
+                  }
+                }
+              }
+              if(selectedProtocol === undefined) return;
+              let tokenInfo: tokensInWalletsAndPools = {
+                claim: {
+                  pool: balanceClaim,
+                  wallet: selectedProtocol.coverObjects[0].collateralStaked - balanceClaim
+                },
+                noclaim: {
+                  pool: balanceNoClaim,
+                  wallet: selectedProtocol.coverObjects[0].collateralStaked - balanceNoClaim
+                }
+              };
+              setTokensInWalletsAndPools(tokenInfo);
+            })
+        })
       });
   }, []);
   return (
@@ -242,13 +322,10 @@ const Cover: FC<PropsProtocol> = (props) => {
             </Grid>
           </Grid>
         </Grid>
-        <pre>Data: {JSON.stringify(timeseriesData, null, 2)}
-        </pre>
       </div>
       ): (
         <LinearProgress color="primary" />
       )}
-      
     </div>
   );
 };

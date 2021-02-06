@@ -25,7 +25,7 @@ export const getMostRelevantPoolBySymbol = (symbolName: string, claim: boolean, 
     let liqMax: number = 0;
     let poolId: string = "";
     let claimTokenAddr: string = "";
-    let symbolIdentifier = `_${symbolName}_`;
+    let symbolIdentifier = `_${symbolName.toUpperCase()}_`;
     let covTokenIdentifier: string = "covToken";
 
     for (let pool in pools) {

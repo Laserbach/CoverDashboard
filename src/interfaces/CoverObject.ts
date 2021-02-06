@@ -5,6 +5,7 @@ export default interface CoverObject {
   expirationTimestamp: number;
   collateralAddress: string;
   collateralStakedValue: number;
+  collateralStaked: number;
   tokens: {
     claimAddress: string;
     noClaimAddress: string;
