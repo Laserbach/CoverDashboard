@@ -7,7 +7,7 @@ import {getFilteredRecords, getRecordsNotOlderThan} from "../utils/apiDataProc";
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
 
-const RECORD_FILTER_SIZE = 10000;
+const RECORD_FILTER_SIZE = 1000;
 interface ProtocolBarChartProps {
   data: any[],
   xAxisDataKey: string,
@@ -23,7 +23,12 @@ const ProtocolBarChart: FC<ProtocolBarChartProps> = (props) => {
   const msSelected = getMsFromTime(props.chartTime);
 
   if (msSelected > 0) {
+    let filterTime = msSelected / RECORD_FILTER_SIZE;
+    chartData = getFilteredRecords(chartData, filterTime);
     chartData = getRecordsNotOlderThan(chartData, msSelected);
+  } else if (msSelected == -1) {
+    let filterTime = 1000*60*60*3;
+    chartData = getFilteredRecords(chartData, filterTime);
   }
 
   const tooltipFormatter = (value: any, name: any, propsTT: any) => {

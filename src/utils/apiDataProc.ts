@@ -57,7 +57,7 @@ export const getFilteredRecords = (records: TimeseriesRecord[], ms: number) => {
     let lastTimestamp: number = 0
 
     for(let record of records) {
-        if (Math.abs(lastTimestamp - record.timestamp) >= ms) {
+        if ((record.claim.swapVol != 0 || record.noclaim.swapVol != 0) || (Math.abs(lastTimestamp - record.timestamp) >= ms)) {
             filteredRecords.push(record)
             lastTimestamp = record.timestamp;
         }
