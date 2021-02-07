@@ -23,11 +23,11 @@ const ProtocolBarChart: FC<TVLProtocolsBarChart> = (props) => {
         <text
           x={0}
           y={0}
-          dy={16} 
+          dy={(window.innerWidth > 800) ? 10 : 3} 
           textAnchor="end"
           fill={props.textColor}
-          transform="rotate(-35)"
-          fontSize="10px"
+          transform={`rotate(${(window.innerWidth > 800) ? "-35" : "-75"})`}
+          fontSize={`${(window.innerWidth > 800) ? "10px" : "7px"}`}
         >
           {payload.value}
         </text>

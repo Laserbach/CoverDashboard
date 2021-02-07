@@ -200,7 +200,7 @@ const Home = () => {
             <Grid container justify="space-between" alignContent="center">
               <p className={classes.infoCard}>Total Amount of Redeem Fees</p>
               {csvs ? (
-                    <p className={classes.infoCard}>{formatCurrency(csvs[csvs.length-1].collateralStakedValue)}</p>
+                    <p className={classes.infoCard}>{"-"}</p>
                   ) : (
                     <LinearProgress color="primary" />
               )}
