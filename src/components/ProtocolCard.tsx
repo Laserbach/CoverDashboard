@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, createStyles, Theme,  } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
@@ -8,12 +8,14 @@ import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Protocols from "../interfaces/Protocols";
 
-const useStyles = makeStyles({
-  root: {
-    maxWidth: 345,
-    backgroundColor: "#6b7affcc",
-  },
-});
+const useStyles = makeStyles((theme: Theme) => (
+  createStyles({
+    root: {
+      maxWidth: 345,
+      backgroundColor: theme.palette.primary.main,
+    }
+  })
+));
 
 interface ProtocolData {
   protocolData: Protocols;

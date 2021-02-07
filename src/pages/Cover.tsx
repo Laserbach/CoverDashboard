@@ -20,7 +20,7 @@ import Protocols from "../interfaces/Protocols";
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
     root: {
-      backgroundColor: "#3a3c4d",
+      backgroundColor: theme.palette.background.default,
       flexGrow: 1,
       marginTop: "10px",
     },
