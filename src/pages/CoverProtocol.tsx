@@ -40,7 +40,7 @@ const CoverProtocol = () => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const [chartTimeSelected = chartTimes[0], setChartTime] = useState<string>();
+  const [chartTimeSelected = chartTimes[1], setChartTime] = useState<string>();
   const [coverBasicInfo, setCoverBasicInfo] = useState<CoverProtocolCoverAPI>();
   const [coverMarketData, setCoverMarketData] = useState<any[]>();
 

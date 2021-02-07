@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FC, useState } from "react";
 import Box from "@material-ui/core/Box";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -11,8 +11,9 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
-import Card from "@material-ui/core/Card";
+import DeleteIcon from '@material-ui/icons/Delete';
+import Button from "@material-ui/core/Button";
+import { Divider } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,28 +35,49 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     marginLeft: theme.spacing(2),
   },
+  subTotalText: {
+    margin: theme.spacing(1),
+    marginLeft: theme.spacing(2),
+  },
+  button: {
+    margin: theme.spacing(2),
+  },
 }));
 
-const Calc = () => {
+interface CalcProps {
+  onChangeTotal: any,
+  onRemoval: any,
+  id: number
+}
+
+const Calc: FC<CalcProps> = (props) => {
   const classes = useStyles();
   const [protocol, setProtocol] = useState("default");
   const [mmcp, setMmcp] = useState("default");
   const [amount, setAmount] = useState("");
   const [radio, setRadio] = useState("noclaim");
-  const handleChangeProtocol = (event) => {
+  
+  // TODO: do calculation of an item in here, when the total of the item gets changed, call
+  // props.onChangeTotal(total, props.id)
+  const handleChangeProtocol = (event: any) => {
     setProtocol(event.target.value);
   };
-  const handleChangeMmcp = (event) => {
+  const handleChangeMmcp = (event: any) => {
     setMmcp(event.target.value);
   };
-  const handleChangeAmount = (event) => {
+  const handleChangeAmount = (event: any) => {
     setAmount(event.target.value);
   };
-  const handleChangeRadio = (event) => {
+  const handleChangeRadio = (event: any) => {
     setRadio(event.target.value);
   };
+
+  const handleOnDelete = (event: any) => {
+    props.onRemoval(props.id);
+  };
+
   return (
-    <Card className={classes.root}>
+    <div>
       <Box
         display="flex"
         flexDirection="row"
@@ -124,14 +146,29 @@ const Calc = () => {
             />
           </RadioGroup>
         </FormControl>
+        <FormControl className={classes.formControl}>
+        {(props.id > 0) ? (
+          <div>
+            <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  onClick={handleOnDelete}
+                  startIcon={<DeleteIcon />}
+                >
+                  Delete
+            </Button>
+          </div>  
+        ) : (<div></div>)}
+        </FormControl>
       </Box>
       <Typography className={classes.text}>Premium:</Typography>
       <Typography className={classes.text}>Shieldmine Rewards:</Typography>
       <Typography className={classes.text}>Estimated Swap Fees:</Typography>
       <Typography className={classes.text}>Impermanent Loss:</Typography>
       <Divider />
-      <Typography className={classes.text}>Total:</Typography>
-    </Card>
+      <Typography className={classes.subTotalText}>Total:</Typography>
+    </div>
   );
 };
 
