@@ -5,7 +5,6 @@ import Drawer from "@material-ui/core/Drawer";
 import Hidden from "@material-ui/core/Hidden";
 import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
-import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -13,10 +12,8 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import MenuIcon from "@material-ui/icons/Menu";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import CardContent from "@material-ui/core/CardContent";
 import CardMedia from "@material-ui/core/CardMedia";
 import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import {
   makeStyles,
@@ -86,10 +83,10 @@ const App: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
   const pages = ["Dashboard", "Covers", "$COVER", "Tools"];
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen = false, setMobileOpen] = useState<boolean>();
   const [pageSelected = pages[0], selectPage] = useState<string>();
 
-  const handleDrawerToggle = (event: any) => {
+  const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
@@ -118,7 +115,7 @@ const App: React.FC = () => {
             key={text}
             style={{ textDecoration: "none", color: theme.palette.text.primary }}
           >
-            <ListItem selected={pageSelected === text} onClick={() => selectPage(text)} button>
+            <ListItem selected={pageSelected === text} onClick={() => {selectPage(text); handleDrawerToggle()}} button>
               <ListItemIcon>{getIconFromPage(text)}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItem>
@@ -194,8 +191,7 @@ const App: React.FC = () => {
                 paper: classes.drawerPaper,
               }}
               variant="permanent"
-              open
-            >
+              open>
               {drawer}
             </Drawer>
           </Hidden>
