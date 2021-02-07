@@ -27,13 +27,12 @@ const useStyles = makeStyles((theme: Theme) => (
       margin: 0
     },
     link : {
-      color: theme.palette.secondary.main
+      color: theme.palette.primary.main
     }
   })
 ));
 
-const chartTimes: string[] = getAllTimes();
-chartTimes.shift();
+const chartTimes: string[] = getAllTimes().slice(1);
 // we do not want 1h chart in here as there's 
 // too less data available from coingecko API
 
@@ -156,43 +155,14 @@ const CoverProtocol = () => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper className={classes.paper}>
-            <Grid container justify="space-between" alignContent="center">
-              <p className={classes.infoCard}>Circulating Supply</p>
-              {coverBasicInfo ? (
-                    <p className={classes.infoCard}>-</p>
-                  ) : (
-                    <LinearProgress color="primary" />
-              )}
-            </Grid>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper className={classes.paper}>
-            <Grid container justify="space-between" alignContent="center">
-              <p className={classes.infoCard}>Unique Adresses</p>
-              {coverBasicInfo ? (
-                    <p className={classes.infoCard}>-</p>
-                  ) : (
-                    <LinearProgress color="primary" />
-              )}
-            </Grid>
-          </Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>
-            <Grid container justify="space-between" alignContent="center">
-              <p className={classes.infoCard}>Token Address</p>
-              <p className={classes.infoCard}><a className={classes.link} href="https://etherscan.io/token/0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713" target="_blank">0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713</a></p>
-            </Grid>
-          </Paper>
-        </Grid>
         <Grid item xs={12}>
           <Paper className={classes.paper}>
             <Grid container justify="center" alignContent="center">
               <p className={classes.infoCard}>Cover Snapshot Page<br/><a className={classes.link} href="https://snapshot.page/#/cover" target="_blank">https://snapshot.page/#/cover</a><br/><br/>
-              Governance Forum<br/><a className={classes.link} href="https://forum.coverprotocol.com" target="_blank">https://forum.coverprotocol.com</a></p>
+              Governance Forum<br/><a className={classes.link} href="https://forum.coverprotocol.com" target="_blank">https://forum.coverprotocol.com</a><br/><br/>
+              Token Address<br/>
+              <a className={classes.link} href="https://etherscan.io/token/0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713" target="_blank">0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713</a>
+              </p>
             </Grid>
           </Paper>
         </Grid>

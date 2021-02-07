@@ -14,7 +14,7 @@ import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/apiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
-import {formatCurrency} from "../utils/formatting";
+import {formatCurrency, formatToInteger} from "../utils/formatting";
 import Protocols from "../interfaces/Protocols";
 
 const useStyles = makeStyles((theme: Theme) => (
@@ -160,7 +160,7 @@ const Cover: FC<PropsProtocol> = (props) => {
               <Grid container justify="space-between" alignContent="center">
                   <p className={classes.infoCard}>Total Amount in Wallets</p>
                   {tokens ? (
-                    <p className={classes.infoCard}>{formatCurrency(tokens[type].wallet)}</p>
+                    <p className={classes.infoCard}>{formatToInteger(tokens[type].wallet)}</p>
                   ): (
                     <LinearProgress color="primary" />
                   )}
@@ -172,7 +172,7 @@ const Cover: FC<PropsProtocol> = (props) => {
               <Grid container justify="space-between" alignContent="center">
                   <p className={classes.infoCard}>Total Amount in Pools</p>
                   {tokens ? (
-                    <p className={classes.infoCard}>{formatCurrency(tokens[type].pool)}</p>
+                    <p className={classes.infoCard}>{formatToInteger(tokens[type].pool)}</p>
                   ): (
                     <LinearProgress color="primary" />
                   )}
@@ -190,6 +190,18 @@ const Cover: FC<PropsProtocol> = (props) => {
 
   const getNewestRecord = (records: TimeseriesRecord[]) => {
     return records[records.length-1];
+  }
+
+  const findMostRecentCoverObject = (coverObjects: any[]) => {
+    let nonceMax: number = -1;
+    let coverObj: any = {};
+    for (let coverObject of coverObjects) {
+      if(coverObject.nonce >= nonceMax) {
+        coverObj = coverObject;
+        nonceMax = coverObj.nonce;
+      }
+    }
+    return coverObj;
   }
 
   useEffect(() => {
@@ -245,14 +257,16 @@ const Cover: FC<PropsProtocol> = (props) => {
                 }
               }
               if(selectedProtocol === undefined) return;
+
+              let coverObject = findMostRecentCoverObject(selectedProtocol.coverObjects);
               let tokenInfo: tokensInWalletsAndPools = {
                 claim: {
                   pool: balanceClaim,
-                  wallet: selectedProtocol.coverObjects[0].collateralStaked - balanceClaim
+                  wallet: coverObject.collateralStaked - balanceClaim
                 },
                 noclaim: {
                   pool: balanceNoClaim,
-                  wallet: selectedProtocol.coverObjects[0].collateralStaked - balanceNoClaim
+                  wallet: coverObject.collateralStaked - balanceNoClaim
                 }
               };
               setTokensInWalletsAndPools(tokenInfo);

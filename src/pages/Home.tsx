@@ -47,6 +47,18 @@ const calcCoverage = (graphData: any, claimTokenAddr: string) => {
   return coverageDemand;
 }
 
+const findMostRecentCoverObject = (coverObjects: any[]) => {
+  let nonceMax: number = -1;
+  let coverObj: any = {};
+  for (let coverObject of coverObjects) {
+    if(coverObject.nonce >= nonceMax) {
+      coverObj = coverObject;
+      nonceMax = coverObj.nonce;
+    }
+  }
+  return coverObj;
+}
+
 
 const Home = () => {
   const classes = useStyles();
@@ -111,12 +123,18 @@ const Home = () => {
   useEffect(() => {
     fetch(api.base_url)
       .then((response) => response.json())
-      .then((data) => {
-        data.protocols.sort((a: Protocols, b: Protocols) => {
-          return b.coverObjects[0].collateralStakedValue - a.coverObjects[0].collateralStakedValue;
-        })
+      .then((data) => {      
         // filter out non-active protocols
         let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
+
+        // remove old cover objects
+        filteredProtocols.forEach(protocol => {
+          protocol.coverObjects = [findMostRecentCoverObject(protocol.coverObjects)];
+        })
+
+        filteredProtocols.sort((a: Protocols, b: Protocols) => {
+          return b.coverObjects[0].collateralStakedValue - a.coverObjects[0].collateralStakedValue;
+        })
         setProtocols(filteredProtocols);
         console.log(filteredProtocols);
         
@@ -216,7 +234,7 @@ const Home = () => {
             <Grid container justify="center">
               <Grid item>
                 <Typography variant="h5" gutterBottom>
-                  Total Active Amount of Coverage per Protocol
+                  Total Value Locked per Protocol
                 </Typography>
               </Grid>
             </Grid>

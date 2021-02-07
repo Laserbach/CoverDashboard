@@ -9,3 +9,8 @@ export const formatCurrency = (num: number) => {
 export const formatPercent = (percent: number) => {
     return new Intl.NumberFormat("en-US", {style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2}).format(percent);
 }
+
+export const formatToInteger = (num: number) => {
+    num = Math.round(num);
+    return new Intl.NumberFormat("en-Us", {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(num);
+}
