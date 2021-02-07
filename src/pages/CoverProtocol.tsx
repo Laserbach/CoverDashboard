@@ -3,25 +3,17 @@ import { makeStyles, createStyles, Theme, useTheme  } from "@material-ui/core/st
 import Grid from "@material-ui/core/Grid";
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
-import TVLProtocolsBarChart from "../components/TVLProtocolsBarChart";
-import Protocols from "../interfaces/Protocols";
-import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import api from "../utils/api.json";
-import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/apiDataProc";
 import LinearProgress from '@material-ui/core/LinearProgress';
-import TVLProtocolsAreaChart from "../components/TVLProtocolsAreaChart";
-import {formatCurrency} from "../utils/formatting";
-import CoverageDemand from "../interfaces/CoverageDemand";
-interface collateralRecord {
-  timestamp: number,
-  collateralStakedValue: number
-}
+import {formatCurrency, formatPercent} from "../utils/formatting";
+import CoverProtocolCoverAPI from "../interfaces/CoverProtocolCoverAPI";
+import {getAllTimes} from "../utils/chartTimeAndType";
+import CoverProtocolPriceChart from "../components/CoverProtocolPriceChart";
+import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
     root: {
-      backgroundColor: "#3a3c4d",
       flexGrow: 1,
       marginTop: "10px",
     },
@@ -33,144 +25,142 @@ const useStyles = makeStyles((theme: Theme) => (
     }, 
     infoCard : {
       margin: 0
+    },
+    link : {
+      color: theme.palette.secondary.main
     }
   })
 ));
 
-const calcCoverage = (graphData: any, claimTokenAddr: string) => {
-  let coverageDemand = 0;
-  for(let i = 0; graphData.data.pool.swaps.length > i; i++){
-      if(graphData.data.pool.swaps[i].tokenOut == claimTokenAddr.toLowerCase()) {
-        coverageDemand += parseFloat(graphData.data.pool.swaps[i].value);
-      }
-  }
-  return coverageDemand;
-}
+const chartTimes: string[] = getAllTimes();
+chartTimes.shift();
+// we do not want 1h chart in here as there's 
+// too less data available from coingecko API
 
-
-const Home = () => {
+const CoverProtocol = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const [protocols, setProtocols] = useState<Protocols[]>();
-  const [demands, setCoverageDemands] = useState<CoverageDemand[]>();
-  const [csvs, setCollateralStakedVales] = useState<collateralRecord[]>();
 
-  /**
-   * Fetches data from TheGraph for all supporting protocols and sets the state (the lowest chart)
-   * when finished.
-   */
-  const fetchAndSetCoverageDemands = (filteredProtocols: Protocols[], data: any) => {
-    let coverageDemands: CoverageDemand[] = [];
-        filteredProtocols.forEach((p: Protocols) => {
-          let name = p.protocolName;
-          let [poolId, claimTokenAddr] = getMostRelevantPoolBySymbol(name, true, data.poolData);
-          let coverage = 0;
-          coverageDemands.push({
-            protocolName: name,
-            poolId: poolId,
-            coverage: coverage,
-            claimTokenAddr: claimTokenAddr
-          })
+  const [chartTimeSelected = chartTimes[0], setChartTime] = useState<string>();
+  const [coverBasicInfo, setCoverBasicInfo] = useState<CoverProtocolCoverAPI>();
+  const [coverMarketData, setCoverMarketData] = useState<any[]>();
 
-        });
-        
-        let graphRequests = coverageDemands.map(d => fetch(api.the_graph_base_url, {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({query: `{
-            pool (id: "${d.poolId}") {
-              totalSwapVolume
-              totalSwapFee
-              tokens {
-                symbol
-                address
-              }
-              swaps {
-                tokenOut
-                value
-              }
-            }
-          }`})
-        }));
+  const makePriceObj = (priceEntry: number[]) => {
+    return {
+      timestamp:priceEntry[0], 
+      price: priceEntry[1]
+    }
+  }
 
-        Promise.all(graphRequests)
-          .then((responses) => {
-            Promise.all(responses.map(r=>r.json()))
-              .then(allGraphData => {
-                for(let i = 0; i<allGraphData.length; i++) {
-                  coverageDemands[i].coverage = calcCoverage(allGraphData[i], coverageDemands[i].claimTokenAddr);
-                }
-                setCoverageDemands(coverageDemands);
-              })
-          })
+  const ListChartTimes = (props: any) => {
+    const times = chartTimes.map((chartTime) =>
+      <Button key={chartTime} variant={(chartTimeSelected === chartTime) ? "contained" : "outlined"} color={props.color} 
+        size="small" onClick={() => setChartTime(chartTime)}>
+        {chartTime}
+      </Button>
+    );
+    return (
+      <Grid item xs={7} justify="flex-end" container>{times}</Grid>
+    );
   }
 
   useEffect(() => {
     fetch(api.base_url)
       .then((response) => response.json())
       .then((data) => {
-        data.protocols.sort((a: Protocols, b: Protocols) => {
-          return b.coverObjects[0].collateralStakedValue - a.coverObjects[0].collateralStakedValue;
-        })
-        // filter out non-active protocols
-        let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
-        setProtocols(filteredProtocols);
-        console.log(filteredProtocols);
-        
-        fetchAndSetCoverageDemands(filteredProtocols, data);
-
-        // now we need to get the timeseries data of each protocol
-        // for that, we need to fetch each protocol and sum up the csv as there's no endpoint in the api for that
-        let urls : string[] = [];
-        let timestampToCSVMap = new Map<number, number>();
-        filteredProtocols.forEach((p: Protocols) => {
-          urls.push(api.timeseries_data_all+p.protocolName);
-        });
-
-        let requests = urls.map(url => fetch(url));
-        Promise.all(requests)
-          .then((responses) => {
-            Promise.all(responses.map(r=>r.json()))
-              .then(dataArr => {
-                dataArr.forEach((data) => {
-                  let records: TimeseriesRecord[] = apiDataToTimeseriesRecords(data);
-                  for(let record of records) {
-                      let csv = timestampToCSVMap.get(record.timestamp);
-                      if(csv === undefined) {
-                        timestampToCSVMap.set(record.timestamp, record.collateralStakedValue);
-                      } else {
-                        csv += record.collateralStakedValue;
-                        timestampToCSVMap.set(record.timestamp, csv);
-                      }
-                  }
-                })
-
-                // now change the map to a sorted array (sorted by ascending timestamp)
-                let collaterals: collateralRecord[] = [];
-                timestampToCSVMap.forEach((value: number, key: number) => {
-                  collaterals.push({
-                    timestamp: key,
-                    collateralStakedValue: value
-                  });
-                });
-                collaterals.sort((entryA, entryB) => {return entryA.timestamp-entryB.timestamp})
-                setCollateralStakedVales(collaterals);
-              })
+        setCoverBasicInfo(data.externalData.coingecko["cover-protocol"]);
+        fetch(api.coingecko_cover_protocol_market_endpoint+"?vs_currency=usd&days=max")
+          .then((response) => response.json())
+          .then((marketData) => {
+            let marketDataPrices : number[][] = marketData.prices;
+            let prices : any[] = marketDataPrices.map(priceEntry => makePriceObj(priceEntry));
+            if(coverBasicInfo) {
+              prices.push({timestamp: coverBasicInfo.last_updated_at, price: coverBasicInfo.usd})
+            }
+            setCoverMarketData(prices);
           })
       });
   }, []);
     return (
     <div>
       <Grid container spacing={3} justify="space-evenly" style={{paddingLeft: "3%", paddingRight: "3%"}}>
+        <Grid item xs={6} sm={3}>
+          <Paper className={classes.paper}>
+            <Grid container justify="space-between" alignContent="center">
+              <p className={classes.infoCard}>Current Price</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard}>{formatCurrency(coverBasicInfo.usd)}</p>
+                  ) : (
+                    <LinearProgress color="primary" />
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Paper className={classes.paper}>
+            <Grid container justify="space-between" alignContent="center">
+              <p className={classes.infoCard}>24h Price Change</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard} style={{color: (coverBasicInfo.usd_24h_change >= 0) ? theme.palette.success.main : theme.palette.error.main}}>{formatPercent(coverBasicInfo.usd_24h_change/100)}</p>
+                  ) : (
+                    <LinearProgress color="primary" />
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Paper className={classes.paper}>
+            <Grid container justify="space-between" alignContent="center">
+              <p className={classes.infoCard}>Market Cap</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard}>{formatCurrency(coverBasicInfo.usd_market_cap)}</p>
+                  ) : (
+                    <LinearProgress color="primary" />
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Paper className={classes.paper}>
+            <Grid container justify="space-between" alignContent="center">
+              <p className={classes.infoCard}>24h Volume</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard}>{formatCurrency(coverBasicInfo.usd_24h_vol)}</p>
+                  ) : (
+                    <LinearProgress color="primary" />
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item xs={12}>
+          <Paper className={classes.paper}>
+            <Grid container justify="center">
+              <Grid item>
+                <Typography variant="h5" gutterBottom>
+                    Cover Protocol Price Chart
+                </Typography>
+              </Grid>
+            </Grid>
+            <Grid container justify="flex-end" alignContent="center">
+              <ListChartTimes color="primary"/>
+              <Grid item xs={12}>
+              {coverMarketData ? (
+                <CoverProtocolPriceChart data={coverMarketData} xAxisDataKey="timestamp" lineDataKey="price" 
+                  lineLabel="Price [USD]" chartTime={chartTimeSelected} textColor={theme.palette.text.primary}
+                  fillColor={theme.palette.primary.main}/>
+                ) : (
+                <LinearProgress color="primary"/>
+                )}
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
         <Grid item xs={12} sm={6}>
           <Paper className={classes.paper}>
             <Grid container justify="space-between" alignContent="center">
-              <p className={classes.infoCard}>Total Value Locked</p>
-              {csvs ? (
-                    <p className={classes.infoCard}>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(csvs[csvs.length-1].collateralStakedValue)}</p>
+              <p className={classes.infoCard}>Circulating Supply</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard}>-</p>
                   ) : (
                     <LinearProgress color="primary" />
               )}
@@ -180,9 +170,9 @@ const Home = () => {
         <Grid item xs={12} sm={6}>
           <Paper className={classes.paper}>
             <Grid container justify="space-between" alignContent="center">
-              <p className={classes.infoCard}>Total Amount of Redeem Fees</p>
-              {csvs ? (
-                    <p className={classes.infoCard}>{formatCurrency(csvs[csvs.length-1].collateralStakedValue)}</p>
+              <p className={classes.infoCard}>Unique Adresses</p>
+              {coverBasicInfo ? (
+                    <p className={classes.infoCard}>-</p>
                   ) : (
                     <LinearProgress color="primary" />
               )}
@@ -191,67 +181,17 @@ const Home = () => {
         </Grid>
         <Grid item xs={12}>
           <Paper className={classes.paper}>
-            <Grid container justify="center">
-              <Grid item>
-                <Typography variant="h5" gutterBottom>
-                  Total Value Locked
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid container justify="space-between" alignItems="center">
-              <Grid item xs={12}>
-                {csvs ? (
-                  <TVLProtocolsAreaChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
-                  data={csvs} xAxisDataKey="timestamp" areaDataKey={"collateralStakedValue"}
-                  areaLabel={`Collateral Staked Value [USD]`}/>
-                ) : (
-                  <LinearProgress color="primary" />
-                )}
-              </Grid>
+            <Grid container justify="space-between" alignContent="center">
+              <p className={classes.infoCard}>Token Address</p>
+              <p className={classes.infoCard}><a className={classes.link} href="https://etherscan.io/token/0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713" target="_blank">0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713</a></p>
             </Grid>
           </Paper>
         </Grid>
         <Grid item xs={12}>
           <Paper className={classes.paper}>
-            <Grid container justify="center">
-              <Grid item>
-                <Typography variant="h5" gutterBottom>
-                  Total Active Amount of Coverage per Protocol
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid container justify="space-between" alignItems="center">
-              <Grid item xs={12}>
-                {protocols ? (
-                  <TVLProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
-                  data={protocols} xAxisDataKey="protocolName" barDataKey={`coverObjects[0].collateralStakedValue`}
-                  barLabel={`Collateral Staked Value [USD]`} />
-                  ) : ( 
-                    <LinearProgress color="secondary" />
-                )}
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>
-            <Grid container justify="center">
-              <Grid item>
-                <Typography variant="h5" gutterBottom>
-                  Coverage Demand per Protocol
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid container justify="space-between" alignItems="center">
-              <Grid item xs={12}>
-                {demands ? (
-                  <TVLProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
-                  data={demands} xAxisDataKey="protocolName" barDataKey={`coverage`}
-                  barLabel={`Coverage Demand per Protocol [USD]`} />
-                ) : (
-                  <LinearProgress color="primary" />
-                )}
-              </Grid>
+            <Grid container justify="center" alignContent="center">
+              <p className={classes.infoCard}>Cover Snapshot Page<br/><a className={classes.link} href="https://snapshot.page/#/cover" target="_blank">https://snapshot.page/#/cover</a><br/><br/>
+              Governance Forum<br/><a className={classes.link} href="https://forum.coverprotocol.com" target="_blank">https://forum.coverprotocol.com</a></p>
             </Grid>
           </Paper>
         </Grid>
@@ -260,4 +200,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default CoverProtocol;
