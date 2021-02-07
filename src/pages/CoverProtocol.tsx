@@ -67,16 +67,17 @@ const CoverProtocol = () => {
   useEffect(() => {
     fetch(api.base_url)
       .then((response) => response.json())
-      .then((data) => {
-        setCoverBasicInfo(data.externalData.coingecko["cover-protocol"]);
+      .then((coverAPIdata) => {
+        setCoverBasicInfo(coverAPIdata.externalData.coingecko["cover-protocol"]);
         fetch(api.coingecko_cover_protocol_market_endpoint+"?vs_currency=usd&days=max")
           .then((response) => response.json())
           .then((marketData) => {
             let marketDataPrices : number[][] = marketData.prices;
             let prices : any[] = marketDataPrices.map(priceEntry => makePriceObj(priceEntry));
-            if(coverBasicInfo) {
-              prices.push({timestamp: coverBasicInfo.last_updated_at, price: coverBasicInfo.usd})
-            }
+            prices.push({
+              timestamp: coverAPIdata.externalData.coingecko["cover-protocol"].last_updated_at*1000,
+              price: coverAPIdata.externalData.coingecko["cover-protocol"].usd
+            });
             setCoverMarketData(prices);
           })
       });
