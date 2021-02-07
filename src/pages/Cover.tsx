@@ -16,6 +16,7 @@ import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 import {formatCurrency, formatToInteger} from "../utils/formatting";
 import Protocols from "../interfaces/Protocols";
+import {getImageSrcOfProtocol} from "../utils/protocolImages";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -282,7 +283,7 @@ const Cover: FC<PropsProtocol> = (props) => {
           <Grid item xs={12}>
               <Paper className={classes.paper}>
                 <Grid className={classes.heading} container justify="center" alignItems="center">
-                  <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={`${process.env.PUBLIC_URL}/images/protocols/${props.match.params.cover}.png`}/>
+                  <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={getImageSrcOfProtocol(props.match.params.cover)}/>
                   <Typography variant="h4" gutterBottom>
                         {props.match.params.cover.toUpperCase()} Token
                   </Typography>

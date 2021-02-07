@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { makeStyles, createStyles, Theme,  } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
@@ -7,6 +7,7 @@ import CardMedia from "@material-ui/core/CardMedia";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Protocols from "../interfaces/Protocols";
+import {getImageSrcOfProtocol} from "../utils/protocolImages";
 
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
@@ -23,6 +24,7 @@ interface ProtocolData {
 
 const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
   const classes = useStyles();
+  let imgSrc = getImageSrcOfProtocol(protocolData.protocolName);
   return (
     <Link
        to={`/covers/${protocolData.protocolName.toLowerCase()}`}
@@ -34,7 +36,7 @@ const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
             component="img"
             alt={`${protocolData.protocolName} protocol icon`}
             height="140"
-            image={`${process.env.PUBLIC_URL}/images/protocols/${protocolData.protocolName}.png`}
+            image={imgSrc}
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">
