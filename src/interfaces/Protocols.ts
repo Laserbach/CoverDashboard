@@ -1,3 +1,4 @@
+import CoverObject from "./CoverObject";
 export default interface Protocols {
   protocolActive: boolean;
   claimNonce: number;
@@ -10,26 +11,5 @@ export default interface Protocols {
   protocolTokenAddress: string;
   protocolUrl: string;
   protocolDisplayName: string;
-  coverObjects: {
-    protocolName: string;
-    coverAddress: string;
-    nonce: number;
-    expirationTimestamp: number;
-    collateralAddress: string;
-    collateralStakedValue: number;
-    tokens: {
-      claimAddress: string;
-      noClaimAddress: string;
-      claimTotalSupply:{
-        type: string;
-        hex: string;
-      };
-      noClaimTotalSupply:{
-        type: string;
-        hex: string;
-      };          
-      claimBalance: boolean;
-      noClaimBalance:boolean;
-    };
-  };
+  coverObjects: CoverObject[];
 }

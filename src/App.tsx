@@ -8,9 +8,12 @@ import Button from "@material-ui/core/Button";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import MenuIcon from "@material-ui/icons/Menu";
+import Card from "@material-ui/core/Card";
+import CardActionArea from "@material-ui/core/CardActionArea";
+import CardMedia from "@material-ui/core/CardMedia";
 import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import {
   makeStyles,
@@ -18,11 +21,17 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import BuildIcon from '@material-ui/icons/Build';
+import HelpIcon from '@material-ui/icons/Help';
+import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 
 import Home from "./pages/Home";
 import Covers from "./pages/Covers";
 import Cover from "./pages/Cover";
 import Tools from "./pages/Tools";
+import CoverProtocol from "./pages/CoverProtocol";
 
 const drawerWidth = 240;
 
@@ -39,8 +48,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     appBar: {
       [theme.breakpoints.up("sm")]: {
-        width: `calc(100% - ${drawerWidth}px)`,
+        width: `100%`,
         marginLeft: drawerWidth,
+        height: "67px"
       },
       flexGrow: 1,
       "border-bottom": "2px solid rgb(105, 105, 105)",
@@ -59,6 +69,8 @@ const useStyles = makeStyles((theme: Theme) =>
     drawerPaper: {
       width: drawerWidth,
       "border-right": "2px solid rgb(105, 105, 105)",
+      marginTop: "65px",
+      borderTop: "2px solid rgb(105, 105, 105)"
     },
     content: {
       flexGrow: 1,
@@ -70,23 +82,41 @@ const useStyles = makeStyles((theme: Theme) =>
 const App: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const pages = ["Dashboard", "Covers", "$COVER"];
+  const [mobileOpen = false, setMobileOpen] = useState<boolean>();
+  const [pageSelected = pages[0], selectPage] = useState<string>();
 
-  const handleDrawerToggle = (event: any) => {
-    console.log(drawer);
+  const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const getIconFromPage = (page: string) => {
+    switch (page) {
+      case pages[0]:
+        return (<DashboardIcon color="primary" />);
+      case pages[1]:
+        return (<BarChartIcon color="primary" />);
+      case pages[2]:
+        return (<AttachMoneyIcon color="primary" />);
+      case pages[3]:
+        return (<BuildIcon color="primary" />);
+      default:
+        return (<HelpIcon color="primary" />);
+    }
+  }
+
   const drawer = (
     <div>
+      <div className={classes.toolbar} />
       <List>
-        {["Dashboard", "Covers", "Tools"].map((text) => (
+        {pages.map((text) => (
           <Link
             to={text === "Dashboard" ? "/" : `/${text.toLowerCase()}`}
             key={text}
-            style={{ textDecoration: "none", color: "white" }}
+            style={{ textDecoration: "none", color: theme.palette.text.primary }}
           >
-            <ListItem button>
+            <ListItem selected={pageSelected === text} onClick={() => {selectPage(text); handleDrawerToggle()}} button>
+              <ListItemIcon>{getIconFromPage(text)}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItem>
           </Link>
@@ -110,9 +140,22 @@ const App: React.FC = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              Cover Tracker
-            </Typography>
+            <div className={classes.title}>
+              <Link to={`/`} style={{ textDecoration: "none"}}>
+                <Card className={classes.title} style={{boxShadow: "none", width: "200px"}}>
+                  <CardActionArea>
+                    <CardMedia
+                      component="img"
+                      alt={`COVER protocol icon`}
+                      height="65"
+                      image={`${process.env.PUBLIC_URL}/images/protocols/COVER.png`}
+                      className={classes.title}
+                      style={{objectFit: "contain", width: "150px", marginRight: "auto", marginLeft: "auto"}}
+                    />
+                  </CardActionArea>
+                </Card>
+              </Link>
+            </div>
             <Button
               variant="contained"
               color="secondary"
@@ -128,7 +171,7 @@ const App: React.FC = () => {
           {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
           <Hidden smUp implementation="css">
             <Drawer
-              variant="temporary"
+              variant="persistent"
               anchor={theme.direction === "rtl" ? "right" : "left"}
               open={mobileOpen}
               onClose={handleDrawerToggle}
@@ -148,8 +191,7 @@ const App: React.FC = () => {
                 paper: classes.drawerPaper,
               }}
               variant="permanent"
-              open
-            >
+              open>
               {drawer}
             </Drawer>
           </Hidden>
@@ -166,6 +208,9 @@ const App: React.FC = () => {
             <Route path="/covers/:cover" exact component={Cover} />
             <Route path="/tools" exact>
               <Tools />
+            </Route>
+            <Route path="/$cover" exact>
+              <CoverProtocol />
             </Route>
           </Switch>
         </main>

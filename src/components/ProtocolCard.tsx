@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { FC, useEffect, useState } from "react";
+import { makeStyles, createStyles, Theme,  } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
@@ -7,13 +7,16 @@ import CardMedia from "@material-ui/core/CardMedia";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Protocols from "../interfaces/Protocols";
+import {getImageSrcOfProtocol} from "../utils/protocolImages";
 
-const useStyles = makeStyles({
-  root: {
-    maxWidth: 345,
-    backgroundColor: "#6b7affcc",
-  },
-});
+const useStyles = makeStyles((theme: Theme) => (
+  createStyles({
+    root: {
+      maxWidth: 345,
+      backgroundColor: theme.palette.primary.main,
+    }
+  })
+));
 
 interface ProtocolData {
   protocolData: Protocols;
@@ -21,19 +24,19 @@ interface ProtocolData {
 
 const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
   const classes = useStyles();
+  let imgSrc = getImageSrcOfProtocol(protocolData.protocolName);
   return (
     <Link
-    to='test'
-    //   to={`/covers/${protocolData.id.toLowerCase()}`}
+       to={`/covers/${protocolData.protocolName.toLowerCase()}`}
        style={{ textDecoration: "none" }}
      >
       <Card className={classes.root}>
         <CardActionArea>
           <CardMedia
             component="img"
-            alt={'test'}
+            alt={`${protocolData.protocolName} protocol icon`}
             height="140"
-            image={`${process.env.PUBLIC_URL}/images/protocols/${protocolData.protocolName}.png`}
+            image={imgSrc}
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="h2">

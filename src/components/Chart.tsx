@@ -7,7 +7,7 @@ import {
   YAxis,
   ResponsiveContainer,
 } from "recharts";
-import ProtocolData from "../interfaces/ProtocolData";
+import ProtocolData from "../interfaces/TimeseriesRecord";
 import { toNiceDate, toK, formatTvl, toNiceDateYear } from "../utils/index";
 
 interface ProtocolDataArray {
