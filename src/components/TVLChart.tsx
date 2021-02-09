@@ -4,7 +4,7 @@ import {AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush, Re
 } from 'recharts';
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
-import {formatBigNumber} from "../utils/formatting";
+import {formatBigNumber, formatToDate, formatToDateTime} from "../utils/formatting";
 
 interface TVLChartProps {
   data: any[],
@@ -34,14 +34,8 @@ const TVLChart: FC<TVLChartProps> = (props) => {
   }
 
   const dateFormatter = (timestamp: number | any) => {
-    let date = new Date(timestamp);
-    return date.toLocaleDateString("en-US");
+    return formatToDate(timestamp, -1);
   };
-
-  const dateTimeFormatter = (timestamp: number | any) => {
-    let date = new Date(timestamp);
-    return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString('en-US');
-  }
 
   return (
     <ResponsiveContainer width='100%' height={300} className={classes.container}>
@@ -57,7 +51,7 @@ const TVLChart: FC<TVLChartProps> = (props) => {
           <XAxis stroke={props.textColor} dataKey={props.xAxisDataKey} tickFormatter={dateFormatter} minTickGap={40} />
           <YAxis stroke={props.textColor} type="number" domain={[dataMin => (dataMin*0.9), dataMax => (dataMax * 1.1)]} 
               tickFormatter={formatBigNumber} minTickGap={50} unit="$" />
-          <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={dateTimeFormatter} />
+          <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={formatToDateTime} />
           <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
           <Brush dataKey={props.xAxisDataKey}  height={30} stroke={props.fillColor} tickFormatter={dateFormatter} fill={props.fillColorBrush}/>
           <Area type="monotone" dataKey={props.areaDataKey} stroke={props.fillColor} name={props.areaLabel} fillOpacity={1} fill={`url(#${props.fillColor})`}/>

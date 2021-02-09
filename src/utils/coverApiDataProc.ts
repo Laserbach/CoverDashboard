@@ -83,7 +83,7 @@ export const apiDataToTimeseriesRecords = (data: any) => {
     return records;
 }
 
-export const getFilteredRecords = (records: TimeseriesRecord[], ms: number) => {
+export const filterVolumeRecords = (records: TimeseriesRecord[], ms: number) => {
     let filteredRecords: TimeseriesRecord[] = [];
     let lastTimestamp: number = 0
 

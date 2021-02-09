@@ -1,3 +1,5 @@
+import {ONE_WEEK} from "../utils/chartTimeAndType";
+
 export const formatNumber = (num: number, digits: number, char: string) => {
     return `${Number(num.toFixed(digits))}${char}`;
 }
@@ -30,4 +32,18 @@ export const formatBigNumber = (num: number) => {
       }
     });
     return formatNumber(num, 2, multiplierSymbol);
+}
+
+export const formatToDate = (timestamp: number, chartTime: number) => {
+    let date = new Date(timestamp);
+    if (chartTime <= ONE_WEEK && chartTime !== -1) {
+      return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString('en-US');
+    } else {
+      return date.toLocaleDateString("en-US");
+    }
+}
+
+export const formatToDateTime = (timestamp: number | any) => {
+    let date = new Date(timestamp);
+    return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString('en-US');
 }

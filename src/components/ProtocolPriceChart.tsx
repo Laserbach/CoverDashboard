@@ -5,7 +5,7 @@ import {getMsFromTime, ONE_DAY} from "../utils/chartTimeAndType";
 import {getRecordsNotOlderThan} from "../utils/coverApiDataProc";
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
-import {formatCurrencyWithDigits, formatCurrency} from "../utils/formatting";
+import {formatCurrencyWithDigits, formatCurrency, formatToDate, formatToDateTime} from "../utils/formatting";
 
 interface ProtocolPriceChartProps {
   data: any[],
@@ -35,12 +35,7 @@ const ProtocolPriceChart: FC<ProtocolPriceChartProps> = (props) => {
   };
 
   const dateFormatter = (timestamp: number | any) => {
-    let date = new Date(timestamp);
-    if (msSelected <= ONE_DAY && msSelected !== -1) {
-      return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString('en-US');
-    } else {
-      return date.toLocaleDateString("en-US");
-    }
+    return formatToDate(timestamp, msSelected);
   };
 
   return (
@@ -52,7 +47,7 @@ const ProtocolPriceChart: FC<ProtocolPriceChartProps> = (props) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis stroke={props.textColor} dataKey={props.xAxisDataKey} tickFormatter={dateFormatter} minTickGap={50} />
         <YAxis stroke={props.textColor} type="number" domain={[dataMin => (dataMin*0.97), dataMax => (dataMax * 1.03)]} tickFormatter={numberFormatter} minTickGap={50} />
-        <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={dateFormatter} />
+        <Tooltip formatter={tooltipFormatter} labelStyle={{color: "black"}} labelFormatter={formatToDateTime} />
         <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
         <Brush dataKey={props.xAxisDataKey}  height={30} stroke={props.fillColor} tickFormatter={dateFormatter} fill={props.fillColorBrush} />
         <Line dot={false} type="monotone" dataKey={props.lineDataKey} stroke={props.fillColor} name={"Price [USD]"} />
