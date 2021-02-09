@@ -1,5 +1,5 @@
 import CoverObject from "./CoverObject";
-export default interface Protocols {
+export default interface Protocol {
   protocolActive: boolean;
   claimNonce: number;
   protocolName: string;

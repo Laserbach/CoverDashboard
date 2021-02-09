@@ -17,7 +17,7 @@ import { Divider } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    backgroundColor: "#3a3c4d",
+    backgroundColor: "#3a3c4d99",
     margin: theme.spacing(2),
   },
   formControl: {

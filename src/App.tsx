@@ -80,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       padding: theme.spacing(3),
     },
+    link : {
+      color: theme.palette.primary.main
+    }
   })
 );
 
@@ -128,8 +131,8 @@ const App: React.FC = () => {
       </List>
       <Box style={{textAlign: "center", bottom: 0, position: "absolute", width: "100%", padding: "20px"}}>
         <Divider />
-        <p>Found an issue?<br /><a href="">Open an Incident</a></p>
-        <p>Maintained by <a href="">Laserbach</a></p>
+        <p>Found an issue?<br /><a href="https://github.com/Laserbach/CoverDashboard/issues" className={classes.link}>Open an Incident</a></p>
+        <p>Maintained by <a href="https://twitter.com/laserbacher" className={classes.link}>Laserbach</a></p>
       </Box>
     </div>
   );

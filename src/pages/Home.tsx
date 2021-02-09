@@ -4,7 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import ProtocolsBarChart from "../components/ProtocolsBarChart";
-import Protocols from "../interfaces/Protocols";
+import Protocol from "../interfaces/Protocol";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import api from "../utils/api.json";
 import {getMostRelevantPoolBySymbol, setCSVsForAnyTimestamp, findAllRecordsAndDistinctTimestamps} from "../utils/coverApiDataProc";
@@ -20,7 +20,7 @@ interface collateralRecord {
 const useStyles = makeStyles((theme: Theme) => (
   createStyles({
     root: {
-      backgroundColor: "#3a3c4d",
+      backgroundColor: "#3a3c4d99",
       flexGrow: 1,
       marginTop: "10px",
     },
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => (
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.primary,
-      backgroundColor: "#323342",
+      backgroundColor: "#3a3c4d99",
     }, 
     infoCard : {
       margin: 0
@@ -62,7 +62,7 @@ const findMostRecentCoverObject = (coverObjects: any[]) => {
 const Home = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const [protocols, setProtocols] = useState<Protocols[]>();
+  const [protocols, setProtocols] = useState<Protocol[]>();
   const [demands, setCoverageDemands] = useState<CoverageDemand[]>();
   const [csvs, setCollateralStakedVales] = useState<collateralRecord[]>();
 
@@ -70,9 +70,9 @@ const Home = () => {
    * Fetches data from TheGraph for all supporting protocols and sets the state (the lowest chart)
    * when finished.
    */
-  const fetchAndSetCoverageDemands = (filteredProtocols: Protocols[], data: any) => {
+  const fetchAndSetCoverageDemands = (filteredProtocols: Protocol[], data: any) => {
     let coverageDemands: CoverageDemand[] = [];
-        filteredProtocols.forEach((p: Protocols) => {
+        filteredProtocols.forEach((p: Protocol) => {
           let name = p.protocolName;
           let [poolId, claimTokenAddr] = getMostRelevantPoolBySymbol(name, true, data.poolData);
           let coverage = 0;
@@ -124,14 +124,14 @@ const Home = () => {
       .then((response) => response.json())
       .then((data) => {      
         // filter out non-active protocols
-        let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
+        let filteredProtocols: Protocol[] = data.protocols.filter((p: Protocol) => p.protocolActive === true);
 
         // remove old cover objects
         filteredProtocols.forEach(protocol => {
           protocol.coverObjects = [findMostRecentCoverObject(protocol.coverObjects)];
         })
 
-        filteredProtocols.sort((a: Protocols, b: Protocols) => {
+        filteredProtocols.sort((a: Protocol, b: Protocol) => {
           return b.coverObjects[0].collateralStakedValue - a.coverObjects[0].collateralStakedValue;
         })
         setProtocols(filteredProtocols);
@@ -142,7 +142,7 @@ const Home = () => {
         // now we need to get the timeseries data of each protocol
         // for that, we need to fetch each protocol and sum up the csv as there's no endpoint in the api for that
         let urls : string[] = [];
-        filteredProtocols.forEach((p: Protocols) => {
+        filteredProtocols.forEach((p: Protocol) => {
           urls.push(api.cover_api.timeseries_data_all+p.protocolName);
         });
 

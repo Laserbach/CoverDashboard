@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => (
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.primary,
-      backgroundColor: "#323342",
+      backgroundColor: "#3a3c4d99",
     }, 
     infoCard : {
       margin: 0

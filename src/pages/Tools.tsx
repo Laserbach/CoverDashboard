@@ -10,7 +10,7 @@ import {formatCurrency} from "../utils/formatting";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    backgroundColor: "#3a3c4d",
+    backgroundColor: "#3a3c4d99",
     margin: theme.spacing(1),
     padding: theme.spacing(1)
   },

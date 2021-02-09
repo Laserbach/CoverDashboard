@@ -15,7 +15,7 @@ import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 import {formatCurrency, formatToInteger} from "../utils/formatting";
-import Protocols from "../interfaces/Protocols";
+import Protocol from "../interfaces/Protocol";
 import {getImageSrcOfProtocol} from "../utils/protocolImages";
 
 const useStyles = makeStyles((theme: Theme) => (
@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => (
       color: theme.palette.text.primary,
       marginLeft: "20px",
       marginRight: "20px",
-      backgroundColor: "#323342"
+      backgroundColor: "#3a3c4d99"
     },
     tooltip: {
       color: theme.palette.text.secondary,
@@ -214,7 +214,7 @@ const Cover: FC<PropsProtocol> = (props) => {
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
-        let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
+        let filteredProtocols: Protocol[] = data.protocols.filter((p: Protocol) => p.protocolActive === true);
         let selectedProtocol = filteredProtocols.find(p => p.protocolName.toLowerCase() === props.match.params.cover.toLowerCase());
         if(selectedProtocol === undefined) return;
         let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, true, data.poolData);
