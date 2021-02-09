@@ -7,13 +7,20 @@ import api from "../utils/api.json";
 
 const Covers = () => {
   const [protocols, setProtocols] = useState<Protocols[]>();
+  const [width, setWidth] = useState<number>(window.innerWidth);
+
+  const handleResize = () => {
+    setWidth(window.innerWidth);
+  }
 
   useEffect(() => {
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
         setProtocols(data.protocols.filter((protocol: Protocols) => protocol.protocolName));
-      })
+      });
+      
+    window.addEventListener('resize', handleResize)
   }, []);
   return (
     <div>
@@ -22,7 +29,7 @@ const Covers = () => {
         {protocols?.map((protocolData, index) => (
           <Grid
             item
-            style={{ width: window.innerWidth > 600 ? "300px" : "50%" }}
+            style={{ width: (width > 600) ? "300px" : "50%" }}
             key={protocolData.protocolName}
           >
             <ProtocolCard protocolData={protocolData} />
