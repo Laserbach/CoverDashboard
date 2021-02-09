@@ -35,7 +35,7 @@ import Tools from "./pages/Tools";
 import CoverProtocol from "./pages/CoverProtocol";
 import { Divider } from "@material-ui/core";
 
-const drawerWidth = 240;
+const drawerWidth = 220;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,11 +53,11 @@ const useStyles = makeStyles((theme: Theme) =>
       [theme.breakpoints.up("md")]: {
         width: `100%`,
         marginLeft: drawerWidth,
-        height: "67px",
-        backgroundColor: theme.palette.background.default
+        height: "67px"
       },
       flexGrow: 1,
-      "border-bottom": "2px solid rgb(105, 105, 105)",
+      "border-bottom": "1px solid rgb(105, 105, 105)",
+      backgroundImage: "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))"
     },
     title: {
       flexGrow: 1,
@@ -72,9 +72,9 @@ const useStyles = makeStyles((theme: Theme) =>
     toolbar: theme.mixins.toolbar,
     drawerPaper: {
       width: drawerWidth,
-      "border-right": "2px solid rgb(105, 105, 105)",
-      marginTop: "65px",
-      borderTop: "2px solid rgb(105, 105, 105)"
+      "border-right": "1px solid rgb(105, 105, 105)",
+      marginTop: "66px",
+      borderTop: "1px solid rgb(105, 105, 105)"
     },
     content: {
       flexGrow: 1,
@@ -113,7 +113,7 @@ const App: React.FC = () => {
   }
 
   const drawer = (
-    <div style={{height: "calc(100% - 65px)", position: "relative"}} >
+    <div style={{height: "calc(100% - 65px)", position: "relative", backgroundImage: "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))"}} >
       <div className={classes.toolbar}/>
       <List>
         {pages.map((text) => (
@@ -142,7 +142,7 @@ const App: React.FC = () => {
       <div className={classes.root}>
         <CssBaseline />
         <AppBar color="inherit" position="fixed" className={classes.appBar}>
-          <Toolbar>
+          <Toolbar style={{paddingLeft:"10px"}}>
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -154,7 +154,7 @@ const App: React.FC = () => {
             </IconButton>
             <div className={classes.title}>
               <Link to={`/`} style={{ textDecoration: "none"}}>
-                <Card className={classes.title} style={{boxShadow: "none", width: "200px"}}>
+                <Card className={classes.title} style={{boxShadow: "none", width: "200px", backgroundColor: "transparent"}}>
                   <CardActionArea>
                     <CardMedia
                       component="img"
