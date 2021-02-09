@@ -113,3 +113,51 @@ export const getRecordsNotOlderThan = (records: TimeseriesRecord[], timeInMS: nu
 
     return filteredRecords;
 }
+
+/**
+ * Finds all Timeseries Records with each distinct Timestamp of multiple Responses from Cover API.
+ * @param allTimeseriesData array of JSON responses of the Timeseries Endpoint from Cover API
+ */
+export const findAllRecordsAndDistinctTimestamps = (allTimeseriesData: any[]) : [number[], TimeseriesRecord[][]] => {
+    let distinctTimestamps = new Map<number, number>();
+    let allRecords: TimeseriesRecord[][] = [];
+    allTimeseriesData.forEach((data) => {
+        let records: TimeseriesRecord[] = apiDataToTimeseriesRecords(data);
+        allRecords.push(records);
+        records.forEach((record) => {
+            distinctTimestamps.set(record.timestamp, 0);
+        });
+    });
+
+    let timestamps: number[] = [];
+    distinctTimestamps.forEach((obj: number, timestamp: number) => {
+        timestamps.push(timestamp);
+    });
+    timestamps.sort();
+    return [timestamps, allRecords];
+}
+
+/**
+ * With this function we extend the records received by the Cover API.
+ * The API does not provide a CollateralStakedValue for each timestamp, it is rather inconsistent.
+ * So with this function we find the CSV of a protocol of each timestamp we need (timestamp array) and 
+ * fill it to a given number array (collateralStakedValues).
+ * 
+ * @param records all TimeseriesRecords which exist for a single protocol from Cover API
+ * @param timestamps array of distinct timestamps (MUST be sorted ascending)
+ * @param collateralStakedValues array which will be filled up with all CSVs (length must be same as of timestamp array)
+ */
+export const setCSVsForAnyTimestamp = (records: TimeseriesRecord[], timestamps: number[], collateralStakedValues: number[]) => {
+    let indexLastRecordUsed: number = 0;
+    let lastCSVSeen: number = 0;
+    for (let i = 0; i<timestamps.length; i++) {
+        let timestamp = timestamps[i];
+        if (records[indexLastRecordUsed] === undefined || records[indexLastRecordUsed].timestamp > timestamp) {
+            collateralStakedValues[i] += lastCSVSeen;
+        } else {
+            collateralStakedValues[i] += records[indexLastRecordUsed].collateralStakedValue;
+            lastCSVSeen = records[indexLastRecordUsed].collateralStakedValue;
+            indexLastRecordUsed++;
+        }
+    }
+}

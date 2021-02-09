@@ -7,10 +7,11 @@ import ProtocolsBarChart from "../components/ProtocolsBarChart";
 import Protocols from "../interfaces/Protocols";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import api from "../utils/api.json";
-import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
+import {getMostRelevantPoolBySymbol, setCSVsForAnyTimestamp, findAllRecordsAndDistinctTimestamps} from "../utils/coverApiDataProc";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TVLProtocolsAreaChart from "../components/TVLChart";
 import CoverageDemand from "../interfaces/CoverageDemand";
+import {formatCurrency} from "../utils/formatting";
 interface collateralRecord {
   timestamp: number,
   collateralStakedValue: number
@@ -141,7 +142,6 @@ const Home = () => {
         // now we need to get the timeseries data of each protocol
         // for that, we need to fetch each protocol and sum up the csv as there's no endpoint in the api for that
         let urls : string[] = [];
-        let timestampToCSVMap = new Map<number, number>();
         filteredProtocols.forEach((p: Protocols) => {
           urls.push(api.cover_api.timeseries_data_all+p.protocolName);
         });
@@ -151,28 +151,21 @@ const Home = () => {
           .then((responses) => {
             Promise.all(responses.map(r=>r.json()))
               .then(dataArr => {
-                dataArr.forEach((data) => {
-                  let records: TimeseriesRecord[] = apiDataToTimeseriesRecords(data);
-                  for(let record of records) {
-                      let csv = timestampToCSVMap.get(record.timestamp);
-                      if(csv === undefined) {
-                        timestampToCSVMap.set(record.timestamp, record.collateralStakedValue);
-                      } else {
-                        csv += record.collateralStakedValue;
-                        timestampToCSVMap.set(record.timestamp, csv);
-                      }
-                  }
-                })
+                let [timestamps, allRecords] = findAllRecordsAndDistinctTimestamps(dataArr); 
+                let allCSV: number[] = new Array(timestamps.length);
+                allCSV.fill(0);
 
-                // now change the map to a sorted array (sorted by ascending timestamp)
-                let collaterals: collateralRecord[] = [];
-                timestampToCSVMap.forEach((value: number, key: number) => {
-                  collaterals.push({
-                    timestamp: key,
-                    collateralStakedValue: value
-                  });
+                allRecords.forEach((records: TimeseriesRecord[]) => {
+                  setCSVsForAnyTimestamp(records, timestamps, allCSV);
                 });
-                collaterals.sort((entryA, entryB) => {return entryA.timestamp-entryB.timestamp})
+
+                let collaterals: collateralRecord[] = [];
+                for (let i = 0; i< timestamps.length; i++) {
+                  collaterals.push({
+                    timestamp: timestamps[i],
+                    collateralStakedValue: allCSV[i]
+                  })
+                }
                 setCollateralStakedVales(collaterals);
               })
           })
@@ -186,7 +179,7 @@ const Home = () => {
             <Grid container justify="space-between" alignContent="center">
               <p className={classes.infoCard}>Total Value Locked</p>
               {csvs ? (
-                    <p className={classes.infoCard}>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(csvs[csvs.length-1].collateralStakedValue)}</p>
+                    <p className={classes.infoCard}>{formatCurrency(csvs[csvs.length-1].collateralStakedValue)}</p>
                   ) : (
                     <LinearProgress color="primary" />
               )}
