@@ -17,12 +17,11 @@ const useStyles = makeStyles((theme: Theme) => (
     }
   })
 ));
-
 interface ProtocolData {
   protocolData: Protocols;
 }
 
-const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
+const ProtocolPreviewCard: FC<ProtocolData> = ({ protocolData }) => {
   const classes = useStyles();
   let imgSrc = getImageSrcOfProtocol(protocolData.protocolName);
   return (
@@ -49,4 +48,4 @@ const ProtocolCard: FC<ProtocolData> = ({ protocolData }) => {
   );
 };
 
-export default ProtocolCard;
+export default ProtocolPreviewCard;

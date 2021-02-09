@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => (
 ));
 
 const chartTimes: string[] = getAllTimes().slice(1);
-// we do not want 1h chart in here as there's 
+// we do not want 1h chart type in here as there's 
 // too less data available from coingecko API
 
 const CoverProtocol = () => {

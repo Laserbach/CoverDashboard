@@ -238,18 +238,16 @@ const Cover: FC<PropsProtocol> = (props) => {
             }
           }`})
         }));
-
         Promise.all(graphRequests)
           .then((responses) => {
           Promise.all(responses.map(r=>r.json()))
             .then(allGraphData => {
               let balanceClaim = 0;
               let balanceNoClaim = 0;
-
-              for(let graphData of allGraphData) {
-                for(let token of graphData.data.pool.tokens) {
-                  if(token.symbol.indexOf(`_${props.match.params.cover.toUpperCase()}_`) > -1) {
-                    if(token.symbol.indexOf(`_CLAIM`) > -1) {
+              for (let graphData of allGraphData) {
+                for (let token of graphData.data.pool.tokens) {
+                  if (token.symbol.indexOf(`_${props.match.params.cover.toUpperCase()}_`) > -1) {
+                    if (token.symbol.indexOf(`_CLAIM`) > -1) {
                       balanceClaim = token.balance;
                     } else if (token.symbol.indexOf(`_NOCLAIM`) > -1) {
                       balanceNoClaim = token.balance;
@@ -257,8 +255,7 @@ const Cover: FC<PropsProtocol> = (props) => {
                   }
                 }
               }
-              if(selectedProtocol === undefined) return;
-
+              if (selectedProtocol === undefined) return;
               let coverObject = findMostRecentCoverObject(selectedProtocol.coverObjects);
               let tokenInfo: tokensInWalletsAndPools = {
                 claim: {

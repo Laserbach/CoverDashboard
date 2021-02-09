@@ -10,6 +10,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import MenuIcon from "@material-ui/icons/Menu";
+import Box from "@material-ui/core/Box";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardMedia from "@material-ui/core/CardMedia";
@@ -32,6 +33,7 @@ import Covers from "./pages/Covers";
 import Cover from "./pages/Cover";
 import Tools from "./pages/Tools";
 import CoverProtocol from "./pages/CoverProtocol";
+import { Divider } from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -108,8 +110,8 @@ const App: React.FC = () => {
   }
 
   const drawer = (
-    <div>
-      <div className={classes.toolbar} />
+    <div style={{height: "calc(100% - 65px)", position: "relative"}} >
+      <div className={classes.toolbar}/>
       <List>
         {pages.map((text) => (
           <Link
@@ -124,6 +126,11 @@ const App: React.FC = () => {
           </Link>
         ))}
       </List>
+      <Box style={{textAlign: "center", bottom: 0, position: "absolute", width: "100%", padding: "20px"}}>
+        <Divider />
+        <p>Found an issue?<br /><a href="">Open an Incident</a></p>
+        <p>Maintained by <a href="">Laserbach</a></p>
+      </Box>
     </div>
   );
 

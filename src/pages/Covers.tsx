@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
-import ProtocolCard from "../components/ProtocolCard";
+import ProtocolPreviewCard from "../components/ProtocolPreviewCard";
 import Protocols from "../interfaces/Protocols";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
@@ -32,7 +32,7 @@ const Covers = () => {
             style={{ width: (width > 600) ? "300px" : "50%" }}
             key={protocolData.protocolName}
           >
-            <ProtocolCard protocolData={protocolData} />
+            <ProtocolPreviewCard protocolData={protocolData}  />
           </Grid>
         ))}
       </Grid>
