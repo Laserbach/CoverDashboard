@@ -9,7 +9,7 @@ const Covers = () => {
   const [protocols, setProtocols] = useState<Protocols[]>();
 
   useEffect(() => {
-    fetch(api.base_url)
+    fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
         setProtocols(data.protocols.filter((protocol: Protocols) => protocol.protocolName));
@@ -22,7 +22,7 @@ const Covers = () => {
         {protocols?.map((protocolData, index) => (
           <Grid
             item
-            style={{ width: window.innerWidth > 600 ? "300px" : "250px" }}    // ??
+            style={{ width: window.innerWidth > 600 ? "300px" : "50%" }}
             key={protocolData.protocolName}
           >
             <ProtocolCard protocolData={protocolData} />

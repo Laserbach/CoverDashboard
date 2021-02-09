@@ -8,7 +8,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import {formatCurrency, formatPercent} from "../utils/formatting";
 import CoverProtocolCoverAPI from "../interfaces/CoverProtocolCoverAPI";
 import {getAllTimes} from "../utils/chartTimeAndType";
-import CoverProtocolPriceChart from "../components/CoverProtocolPriceChart";
+import ProtocolPriceChart from "../components/ProtocolPriceChart";
 import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme: Theme) => (
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => (
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.primary,
-      backgroundColor: "#414357",
+      backgroundColor: "#323342",
     }, 
     infoCard : {
       margin: 0
@@ -64,11 +64,11 @@ const CoverProtocol = () => {
   }
 
   useEffect(() => {
-    fetch(api.base_url)
+    fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((coverAPIdata) => {
         setCoverBasicInfo(coverAPIdata.externalData.coingecko["cover-protocol"]);
-        fetch(api.coingecko_cover_protocol_market_endpoint+"?vs_currency=usd&days=max")
+        fetch(api.coingecko_api.market_endpoint_cover_protocol+"?vs_currency=usd&days=max")
           .then((response) => response.json())
           .then((marketData) => {
             let marketDataPrices : number[][] = marketData.prices;
@@ -145,9 +145,9 @@ const CoverProtocol = () => {
               <ListChartTimes color="primary"/>
               <Grid item xs={12}>
               {coverMarketData ? (
-                <CoverProtocolPriceChart data={coverMarketData} xAxisDataKey="timestamp" lineDataKey="price" 
-                  lineLabel="Price [USD]" chartTime={chartTimeSelected} textColor={theme.palette.text.primary}
-                  fillColor={theme.palette.primary.main}/>
+                <ProtocolPriceChart data={coverMarketData} xAxisDataKey="timestamp" lineDataKey="price" 
+                  chartTime={chartTimeSelected} textColor={theme.palette.text.primary}
+                  fillColor={theme.palette.primary.main} fillColorBrush={"#323342"}/>
                 ) : (
                 <LinearProgress color="primary"/>
                 )}

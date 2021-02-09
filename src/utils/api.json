@@ -1,7 +1,15 @@
 {
-    "base_url": "https://api.coverprotocol.com/protocol_data/production/",
-    "timeseries_data_all": "https://api.coverprotocol.com/protocol_data/production/getV1TimeseriesData?startTimestamp=0&endTimestamp=99999999999999999999&protocol=",
-    "pool_base_url": "https://pools.balancer.exchange/#/pool/",
-    "the_graph_base_url": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer",
-    "coingecko_cover_protocol_market_endpoint": "https://api.coingecko.com/api/v3/coins/cover-protocol/market_chart"
+    "cover_api": {
+        "base_url": "https://api.coverprotocol.com/protocol_data/production/",
+        "timeseries_data_all": "https://api.coverprotocol.com/protocol_data/production/getV1TimeseriesData?startTimestamp=0&endTimestamp=99999999999999999999&protocol="
+    },
+    "balancer_pools": {
+        "base_url": "https://pools.balancer.exchange/#/pool/"
+    },
+    "the_graph_api": {
+        "base_url": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer"
+    },
+    "coingecko_api": {
+        "market_endpoint_cover_protocol": "https://api.coingecko.com/api/v3/coins/cover-protocol/market_chart"
+    }
 }

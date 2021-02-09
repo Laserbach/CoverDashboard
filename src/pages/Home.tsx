@@ -3,15 +3,13 @@ import { makeStyles, createStyles, Theme, useTheme  } from "@material-ui/core/st
 import Grid from "@material-ui/core/Grid";
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
-import TVLProtocolsBarChart from "../components/TVLProtocolsBarChart";
+import ProtocolsBarChart from "../components/ProtocolsBarChart";
 import Protocols from "../interfaces/Protocols";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import api from "../utils/api.json";
-import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/apiDataProc";
+import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
 import LinearProgress from '@material-ui/core/LinearProgress';
-import TVLProtocolsAreaChart from "../components/TVLProtocolsAreaChart";
-import {formatCurrency} from "../utils/formatting";
+import TVLProtocolsAreaChart from "../components/TVLChart";
 import CoverageDemand from "../interfaces/CoverageDemand";
 interface collateralRecord {
   timestamp: number,
@@ -29,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => (
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.primary,
-      backgroundColor: "#414357",
+      backgroundColor: "#323342",
     }, 
     infoCard : {
       margin: 0
@@ -86,7 +84,7 @@ const Home = () => {
 
         });
         
-        let graphRequests = coverageDemands.map(d => fetch(api.the_graph_base_url, {
+        let graphRequests = coverageDemands.map(d => fetch(api.the_graph_api.base_url, {
           method: "POST",
           mode: "cors",
           headers: {
@@ -121,7 +119,7 @@ const Home = () => {
   }
 
   useEffect(() => {
-    fetch(api.base_url)
+    fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {      
         // filter out non-active protocols
@@ -145,7 +143,7 @@ const Home = () => {
         let urls : string[] = [];
         let timestampToCSVMap = new Map<number, number>();
         filteredProtocols.forEach((p: Protocols) => {
-          urls.push(api.timeseries_data_all+p.protocolName);
+          urls.push(api.cover_api.timeseries_data_all+p.protocolName);
         });
 
         let requests = urls.map(url => fetch(url));
@@ -221,7 +219,7 @@ const Home = () => {
                 {csvs ? (
                   <TVLProtocolsAreaChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
                   data={csvs} xAxisDataKey="timestamp" areaDataKey={"collateralStakedValue"}
-                  areaLabel={`Collateral Staked Value [USD]`}/>
+                  areaLabel={`Collateral Staked Value [USD]`} fillColorBrush={"#323342"}/>
                 ) : (
                   <LinearProgress color="primary" />
                 )}
@@ -241,7 +239,7 @@ const Home = () => {
             <Grid container justify="space-between" alignItems="center">
               <Grid item xs={12}>
                 {protocols ? (
-                  <TVLProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
+                  <ProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.secondary.main}
                   data={protocols} xAxisDataKey="protocolName" barDataKey={`coverObjects[0].collateralStakedValue`}
                   barLabel={`Collateral Staked Value [USD]`} />
                   ) : ( 
@@ -263,7 +261,7 @@ const Home = () => {
             <Grid container justify="space-between" alignItems="center">
               <Grid item xs={12}>
                 {demands ? (
-                  <TVLProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
+                  <ProtocolsBarChart textColor={theme.palette.text.primary} fillColor={theme.palette.primary.main}
                   data={demands} xAxisDataKey="protocolName" barDataKey={`coverage`}
                   barLabel={`Coverage Demand per Protocol [USD]`} />
                 ) : (

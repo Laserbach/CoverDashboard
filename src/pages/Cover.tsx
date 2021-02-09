@@ -7,12 +7,12 @@ import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
-import ProtocolBarChart from '../components/ProtocolBarChart';
-import ProtocolLineChart from '../components/ProtocolLineChart';
-import ProtocolAreaChart from '../components/ProtocolAreaChart';
+import ProtocolVolumeChart from '../components/ProtocolVolumeChart';
+import ProtocolPriceChart from '../components/ProtocolPriceChart';
+import ProtocolLiquidityChart from '../components/ProtocolLiquidityChart';
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
-import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/apiDataProc";
+import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 import {formatCurrency, formatToInteger} from "../utils/formatting";
 import Protocols from "../interfaces/Protocols";
@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => (
       color: theme.palette.text.primary,
       marginLeft: "20px",
       marginRight: "20px",
-      backgroundColor: "#414357"
+      backgroundColor: "#323342"
     },
     tooltip: {
       color: theme.palette.text.secondary,
@@ -109,27 +109,27 @@ const Cover: FC<PropsProtocol> = (props) => {
       switch(chartType) {
         case chartTypes[0]:
           return (
-            <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+            <ProtocolPriceChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
-                    lineLabel={`Price [USD]`}/>
+                    fillColorBrush={"#323342"}/>
           );
         case chartTypes[1]:
           return (
-            <ProtocolBarChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+            <ProtocolVolumeChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" barDataKey={`${type.toLowerCase()}.swapVol`}
-                  barLabel={`Volume [USD]`} filtering={false} />
+                  barLabel={`Volume [USD]`} filtering={false} fillColorBrush={"#323342"}/>
           );
         case chartTypes[2]:
           return (
-            <ProtocolAreaChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+            <ProtocolLiquidityChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" areaDataKey={`${type.toLowerCase()}.liquidity`}
-                    areaLabel={`Liquidity [USD]`}/>
+                    areaLabel={`Liquidity [USD]`} fillColorBrush={"#323342"}/>
           );
         default:
           return (
-            <ProtocolLineChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+            <ProtocolPriceChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
                   chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
-                    lineLabel={`Price [USD]`}/>
+                    fillColorBrush={"#323342"}/>
           );
       }
     }
@@ -206,12 +206,12 @@ const Cover: FC<PropsProtocol> = (props) => {
   }
 
   useEffect(() => {
-    fetch(`${api.timeseries_data_all+props.match.params.cover}`)
+    fetch(`${api.cover_api.timeseries_data_all+props.match.params.cover}`)
       .then((response) => response.json())
       .then((data) => {
         setTimeseriesData(apiDataToTimeseriesRecords(data))
       });
-    fetch(api.base_url)
+    fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
         let filteredProtocols: Protocols[] = data.protocols.filter((p: Protocols) => p.protocolActive === true);
@@ -220,7 +220,7 @@ const Cover: FC<PropsProtocol> = (props) => {
         let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, true, data.poolData);
         let [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, false, data.poolData);
         let pools = [poolIdClaim, poolIdNoClaim];
-        let graphRequests = pools.map(poolId => fetch(api.the_graph_base_url, {
+        let graphRequests = pools.map(poolId => fetch(api.the_graph_api.base_url, {
           method: "POST",
           mode: "cors",
           headers: {
@@ -294,7 +294,7 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper}>
               <Grid container justify="center">
                 <Grid item>
-                  <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).claim.poolId}>
+                  <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).claim.poolId}>
                     <Typography variant="h5" gutterBottom>
                       CLAIM Token
                     </Typography>
@@ -317,7 +317,7 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper}>
               <Grid container justify="center">
                 <Grid item>
-                <Link color="inherit" href={api.pool_base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
+                <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
                   <Typography variant="h5" gutterBottom>
                   NOCLAIM Token
                 </Typography>

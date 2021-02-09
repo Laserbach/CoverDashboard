@@ -1,10 +1,12 @@
 import { FC } from "react";
+import { makeStyles, createStyles, Theme  } from "@material-ui/core/styles";
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush, ReferenceLine, ResponsiveContainer
 } from 'recharts';
 import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
+import {formatBigNumber} from "../utils/formatting";
 
-interface TVLProtocolsBarChart {
+interface ProtocolsBarChart {
   data: any[],
   xAxisDataKey: string,
   barDataKey: string,
@@ -13,7 +15,17 @@ interface TVLProtocolsBarChart {
   fillColor: string,
 }
 
-const ProtocolBarChart: FC<TVLProtocolsBarChart> = (props) => {
+const useStyles = makeStyles((theme: Theme) => (
+  createStyles({
+    container: {
+      marginRight: "auto",
+      marginLeft: "auto"
+    }
+  })
+));
+
+const ProtocolBarChart: FC<ProtocolsBarChart> = (props) => {
+  const classes = useStyles();
   let chartData = props.data;
 
   const RenderTick = (propsRT: any) => {
@@ -35,24 +47,19 @@ const ProtocolBarChart: FC<TVLProtocolsBarChart> = (props) => {
     );
   };
 
-  const numberFormatter = (vol: number) => {
-    vol = vol / 1000;
-    return Number(vol.toFixed(0)) + "k$";
-  };
-
   const tooltipFormatter = (value: any, name: any, propsTT: any) => {
-    return [numberFormatter(value), props.barLabel];
+    return [formatBigNumber(value), props.barLabel];
   }
 
   return (
-    <ResponsiveContainer width='100%' height={300}>
+    <ResponsiveContainer width='100%' height={300} className={classes.container}>
       {(chartData.length > 0) ? (
       <BarChart data={chartData} margin={{
-            top: 5, right: 50, left: 10, bottom: 40,
+            top: 5, right: 30, left: 30, bottom: 40,
         }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis stroke={props.textColor} dataKey={props.xAxisDataKey} type="category" allowDataOverflow={true} interval={0} tick={<RenderTick />} />
-        <YAxis stroke={props.textColor} type="number" domain={[dataMin => (dataMin*0), dataMax => (dataMax)]} tickFormatter={numberFormatter} />
+        <YAxis stroke={props.textColor} type="number" domain={[dataMin => (dataMin*0), dataMax => (dataMax)]} tickFormatter={formatBigNumber} unit={"$"} />
         <Tooltip labelStyle={{color: "black"}} formatter={tooltipFormatter} />
         <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px'}} />
         <Bar dataKey={props.barDataKey} fill={props.fillColor} name={props.barLabel} />
