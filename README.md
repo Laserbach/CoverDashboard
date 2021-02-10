@@ -5,4 +5,4 @@ This dashboard tracks [COVER](https://www.coingecko.com/de/munze/cover-protocol)
 
 
 # Feature Request?
-Head over to the [Issues Tab](https://github.com/Laserbach/CoverDashboard/issues) or write a DM to [Laserbach](https://github.com/Laserbach/CoverDashboard/issues).
+Head over to the [Issues Tab](https://github.com/Laserbach/CoverDashboard/issues) or write a DM to [Laserbach](https://twitter.com/Laserbacher).
