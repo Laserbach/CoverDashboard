@@ -22,11 +22,11 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import BarChartIcon from '@material-ui/icons/BarChart';
-import BuildIcon from '@material-ui/icons/Build';
-import HelpIcon from '@material-ui/icons/Help';
-import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import BarChartIcon from "@material-ui/icons/BarChart";
+import BuildIcon from "@material-ui/icons/Build";
+import HelpIcon from "@material-ui/icons/Help";
+import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
 
 import Home from "./pages/Home";
 import Covers from "./pages/Covers";
@@ -47,17 +47,18 @@ const useStyles = makeStyles((theme: Theme) =>
         width: drawerWidth,
         flexShrink: 0,
       },
-      backgroundColor: theme.palette.background.default
+      backgroundColor: theme.palette.background.default,
     },
     appBar: {
       [theme.breakpoints.up("md")]: {
         width: `100%`,
         marginLeft: drawerWidth,
-        height: "67px"
+        height: "67px",
       },
       flexGrow: 1,
       "border-bottom": "1px solid rgb(105, 105, 105)",
-      backgroundImage: "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))"
+      backgroundImage:
+        "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))",
     },
     title: {
       flexGrow: 1,
@@ -74,15 +75,15 @@ const useStyles = makeStyles((theme: Theme) =>
       width: drawerWidth,
       "border-right": "1px solid rgb(105, 105, 105)",
       marginTop: "66px",
-      borderTop: "1px solid rgb(105, 105, 105)"
+      borderTop: "1px solid rgb(105, 105, 105)",
     },
     content: {
       flexGrow: 1,
       padding: theme.spacing(3),
     },
-    link : {
-      color: theme.palette.primary.main
-    }
+    link: {
+      color: theme.palette.primary.main,
+    },
   })
 );
 
@@ -100,39 +101,69 @@ const App: React.FC = () => {
   const getIconFromPage = (page: string) => {
     switch (page) {
       case pages[0]:
-        return (<DashboardIcon color="primary" />);
+        return <DashboardIcon color="primary" />;
       case pages[1]:
-        return (<BarChartIcon color="primary" />);
+        return <BarChartIcon color="primary" />;
       case pages[2]:
-        return (<AttachMoneyIcon color="primary" />);
+        return <AttachMoneyIcon color="primary" />;
       case pages[3]:
-        return (<BuildIcon color="primary" />);
+        return <BuildIcon color="primary" />;
       default:
-        return (<HelpIcon color="primary" />);
+        return <HelpIcon color="primary" />;
     }
-  }
+  };
 
   const drawer = (
-    <div style={{height: "calc(100% - 65px)", position: "relative", backgroundImage: "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))"}} >
-      <div className={classes.toolbar}/>
+    <div
+      style={{
+        height: "calc(100% - 65px)",
+        position: "relative",
+        backgroundImage:
+          "repeating-linear-gradient(45deg, rgba(97,97,97,0.1) 0px, rgba(97,97,97,0.1) 2px,transparent 2px, transparent 4px),linear-gradient(90deg, rgb(33,34,44),rgb(33,34,44))",
+      }}
+    >
+      <div className={classes.toolbar} />
       <List>
         {pages.map((text) => (
           <Link
             to={text === "Dashboard" ? "/" : `/${text.toLowerCase()}`}
             key={text}
-            style={{ textDecoration: "none", color: theme.palette.text.primary }}
+            style={{
+              textDecoration: "none",
+              color: theme.palette.text.primary,
+            }}
           >
-            <ListItem selected={pageSelected === text} onClick={() => {selectPage(text); handleDrawerToggle()}} button>
+            <ListItem
+              selected={pageSelected === text}
+              onClick={() => {
+                selectPage(text);
+                handleDrawerToggle();
+              }}
+              button
+            >
               <ListItemIcon>{getIconFromPage(text)}</ListItemIcon>
               <ListItemText primary={text} />
             </ListItem>
           </Link>
         ))}
       </List>
-      <Box style={{textAlign: "center", bottom: 0, position: "absolute", width: "100%", padding: "20px"}}>
+      <Box
+        style={{
+          textAlign: "center",
+          bottom: 0,
+          position: "absolute",
+          width: "100%",
+          padding: "20px",
+        }}
+      >
         <Divider />
-        <p>Found an issue?<br /><a href="https://github.com/Laserbach/CoverDashboard/issues" className={classes.link}>Open an Incident</a></p>
-        <p>Maintained by <a href="https://twitter.com/laserbacher" className={classes.link}>Laserbach</a></p>
+        {/* <p>Found an issue?<br /><a href="https://github.com/Laserbach/CoverDashboard/issues" className={classes.link}>Open an Incident</a></p> */}
+        <p>
+          Maintained by{" "}
+          <a href="https://twitter.com/laserbacher" className={classes.link}>
+            Laserbach
+          </a>
+        </p>
       </Box>
     </div>
   );
@@ -142,7 +173,7 @@ const App: React.FC = () => {
       <div className={classes.root}>
         <CssBaseline />
         <AppBar color="inherit" position="fixed" className={classes.appBar}>
-          <Toolbar style={{paddingLeft:"10px"}}>
+          <Toolbar style={{ paddingLeft: "10px" }}>
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -153,8 +184,15 @@ const App: React.FC = () => {
               <MenuIcon />
             </IconButton>
             <div className={classes.title}>
-              <Link to={`/`} style={{ textDecoration: "none"}}>
-                <Card className={classes.title} style={{boxShadow: "none", width: "200px", backgroundColor: "transparent"}}>
+              <Link to={`/`} style={{ textDecoration: "none" }}>
+                <Card
+                  className={classes.title}
+                  style={{
+                    boxShadow: "none",
+                    width: "200px",
+                    backgroundColor: "transparent",
+                  }}
+                >
                   <CardActionArea>
                     <CardMedia
                       component="img"
@@ -162,7 +200,12 @@ const App: React.FC = () => {
                       height="65"
                       image={`${process.env.PUBLIC_URL}/images/protocols/COVER.png`}
                       className={classes.title}
-                      style={{objectFit: "contain", width: "150px", marginRight: "auto", marginLeft: "auto"}}
+                      style={{
+                        objectFit: "contain",
+                        width: "150px",
+                        marginRight: "auto",
+                        marginLeft: "auto",
+                      }}
                     />
                   </CardActionArea>
                 </Card>
@@ -203,7 +246,8 @@ const App: React.FC = () => {
                 paper: classes.drawerPaper,
               }}
               variant="permanent"
-              open>
+              open
+            >
               {drawer}
             </Drawer>
           </Hidden>
