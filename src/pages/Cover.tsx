@@ -73,7 +73,8 @@ const Cover: FC<PropsProtocol> = (props) => {
   const theme = useTheme();
   const chartTimes: string[] = getAllTimes();
   const chartTypes: string[] = getAllTypes();
-  const swapFeePercent: number = 0.01;
+  const [swapFeePercentClaim, setSwapFeeClaim] = useState<number>();
+  const [swapFeePercentNoClaim, setSwapFeeNoClaim] = useState<number>();
   const [timeseriesData, setTimeseriesData] = useState<TimeseriesRecord[]>();
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
   const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
@@ -152,7 +153,11 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper} style={{marginTop: "10px"}}>
               <Grid container justify="space-between" alignContent="center">
                 <p className={classes.infoCard}>Total Amount of Swap Fees</p>
-                <p className={classes.infoCard}>{formatCurrency(getNewestRecord(records)[type].swapVolCum*swapFeePercent)}</p>
+                {(type === "claim" && swapFeePercentClaim && swapFeePercentNoClaim) ? (
+                  <p className={classes.infoCard}>{formatCurrency(getNewestRecord(records)[type].swapVolCum*swapFeePercentClaim)}</p>
+                ) : swapFeePercentNoClaim ? (
+                  <p className={classes.infoCard}>{formatCurrency(getNewestRecord(records)[type].swapVolCum*swapFeePercentNoClaim)}</p>
+                ) : (<div></div>)}  
               </Grid>
             </Paper>
           </Grid>
@@ -219,6 +224,8 @@ const Cover: FC<PropsProtocol> = (props) => {
         if(selectedProtocol === undefined) return;
         let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, true, data.poolData);
         let [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, false, data.poolData);
+        setSwapFeeClaim(data.poolData[poolIdClaim].poolId.swapFee);
+        setSwapFeeNoClaim(data.poolData[poolIdNoClaim].poolId.swapFee);
         let pools = [poolIdClaim, poolIdNoClaim];
         let graphRequests = pools.map(poolId => fetch(api.the_graph_api.base_url, {
           method: "POST",

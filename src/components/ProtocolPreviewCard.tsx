@@ -26,7 +26,7 @@ const ProtocolPreviewCard: FC<ProtocolData> = ({ protocolData }) => {
   let imgSrc = getImageSrcOfProtocol(protocolData.protocolName);
   return (
     <Link
-      href={`/covers/${protocolData.protocolName.toLowerCase()}`}
+       href={`/covers/${protocolData.protocolName.toLowerCase()}`}
        style={{ textDecoration: "none" }}>
       <Card className={classes.root}>
         <CardActionArea>
@@ -40,12 +40,9 @@ const ProtocolPreviewCard: FC<ProtocolData> = ({ protocolData }) => {
             <Typography gutterBottom variant="h6">
               {protocolData.protocolName}
             </Typography>
-            <Link href={`https://${protocolData.protocolUrl}` || "/covers"} target="_blank" color="inherit" rel="noreferrer">
-              <Typography gutterBottom variant="subtitle1">
+            <Typography gutterBottom variant="subtitle1">
                 {protocolData.protocolUrl || "-"}
-              </Typography>
-            </Link>
-            
+            </Typography>
           </CardContent>
         </CardActionArea>
       </Card>
