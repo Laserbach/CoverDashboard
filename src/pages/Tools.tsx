@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
@@ -7,6 +7,8 @@ import Typography from "@material-ui/core/Typography";
 import Calc from "../components/Calc";
 import AddIcon from '@material-ui/icons/Add';
 import {formatCurrency} from "../utils/formatting";
+import api from "../utils/api.json";
+import Protocol from "../interfaces/Protocol";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,40 +46,65 @@ const Tools = () => {
     }));
   }
 
-  const [items, setItems] = useState<any[]>([<Calc id={0} onChangeTotal={handleOnChangeTotal} onRemoval={handleOnItemRemoval}/>]);
   const [totals, setTotals] = useState<number[]>([0]);
+  const [protocols, setProtocols] = useState<Protocol[]>();
+  const [apiData, setApiData] = useState<any>();
+  const [items, setItems] = useState<number[]>([0]);
+
+  useEffect(() => {
+    fetch(api.cover_api.base_url)
+      .then((response) => response.json())
+      .then((data) => {
+        let protocols = data.protocols.filter((protocol: Protocol) => protocol.protocolName);
+        protocols.sort((pA: Protocol, pB: Protocol) => {
+          if (pA.protocolName < pB.protocolName) { return -1; }
+          if (pA.protocolName > pB.protocolName) { return 1;  }
+          return 0;
+        });
+        setProtocols(protocols);
+        setApiData(data);
+      });
+  }, []);
 
   const addItem = () => {
-    console.log(items.length);
-    setItems((p) => [...p, <Calc id={items.length} onChangeTotal={handleOnChangeTotal} onRemoval={handleOnItemRemoval}/>]);
+    setItems((p) => [...p, items.length]);
     setTotals((t) => [...t, 10]);
   };
 
   return (
     <div>
       <Grid container spacing={3} justify="space-evenly">
-        {items.map((item, index) => (
-          <Grid item xs={12} key={index}>
-            <Card className={classes.root}>
-              <Grid container justify="space-evenly" alignItems="center">
-                <Grid item xs={12}>
-                  {item}
+        {protocols && apiData ? (
+          items.map((item, index) => (
+            <Grid item xs={12} key={index}>
+              <Card className={classes.root}>
+                <Grid container justify="space-evenly" alignItems="center">
+                  <Grid item xs={12}>
+                    <Calc id={item} onChangeTotal={handleOnChangeTotal} onRemoval={handleOnItemRemoval} protocols={protocols} apiData={apiData} />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Card>
-          </Grid>
-        ))}
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <div></div>
+        )}
+        
         <Grid item xs={12} container justify="space-between" alignItems="center" >
           <Grid item xs={2}>
-            <Button
+            {protocols ? (
+              <Button
               className={classes.button}
               variant="contained"
               color="primary"
               onClick={addItem}
               startIcon={<AddIcon />}
-            >
-              Add Coverage
-            </Button>
+              >
+                Add Coverage
+              </Button>
+            ) : (
+              <div></div>
+            )}
           </Grid>
           <Grid item xs={2}>
             <Typography variant="h6" className={classes.totalText}>Total: {formatCurrency(totals.reduce((A, B) => A+B))}</Typography>
