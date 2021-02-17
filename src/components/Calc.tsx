@@ -23,6 +23,7 @@ import {
   cpCalcSfAndILOnHack,
   cpCalcSfAndILOnNoHack} from "../utils/toolsCalculations";
 import {getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
+import {formatCurrency} from "../utils/formatting";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -53,6 +54,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const SCENARIO_HACK : string = "hack";
+const SCENARIO_NO_HACK : string = "nohack";
+
+const TYPE_MM : string = "mm";
+const TYPE_CP : string = "cp";
+
 interface CalcProps {
   onChangeTotal: any,
   onRemoval: any,
@@ -64,132 +71,100 @@ interface CalcProps {
 const Calc: FC<CalcProps> = (props) => {
   const classes = useStyles();
   const [protocol, setProtocol] = useState(props.protocols[0].protocolName.toLowerCase());
-  const [mmcp, setMmcp] = useState("mm");
-  const [mintAmount, setMintAmount] = useState(1000);
-  const [scenario, setScenario] = useState("nohack");
+  const [poolIdClaim, setPoolIdClaim] = useState(getMostRelevantPoolBySymbol(protocol, true, props.apiData.poolData)[0]);
+  const [poolIdNoClaim, setPoolIdNoClaim] = useState(getMostRelevantPoolBySymbol(protocol, false, props.apiData.poolData)[0]);
+  const [mmcp, setMmcp] = useState(TYPE_MM);
+  const [mintAmount, setMintAmount] = useState(10000);
+  const [scenario, setScenario] = useState(SCENARIO_NO_HACK);
   const [bonusRewards, setBonusRewards] = useState(0);
   const [sf, setSwapFees] = useState(0);
   const [il, setImpermanentLoss] = useState(0);
   const [premium, setPremium] = useState(0);
-  
-  
-  const calc = () => {
+
+  const findPoolDataObj = (poolIdentifier : string) => {
     const poolData = props.apiData.poolData;
-    let poolIdClaim : string;
-    let poolIdNoClaim: string;
-    let claimTokenAddr: string;
-    let noClaimTokenAddr: string;
+    let poolDataObj : PoolData;
+    let tokenDai : any;
+    let tokenCov : any;
 
-    // get pooldata(s) of new protocol
-    [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(protocol, true, poolData);
-    [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(protocol, false, poolData);
-
-    let poolDataClaim : PoolData;
-    let poolDataNoClaim : PoolData;
-    let tokenClaimDai : any;
-    let tokenClaimCov : any;
-    let tokenNoClaimDai : any;
-    let tokenNoClaimCov : any;
-
-    poolData[poolIdClaim].poolId.tokens.forEach((token : any) => {
+    poolData[poolIdentifier].poolId.tokens.forEach((token : any) => {
       if(token.name === "covToken") {
-        tokenClaimCov = token;
+        tokenCov = token;
         return;
       } 
 
       if (token.symbol.toUpperCase() === "DAI") {
-        tokenClaimDai = token;
+        tokenDai = token;
         return;
       }
     });
 
-    poolData[poolIdNoClaim].poolId.tokens.forEach((token : any) => {
-      if(token.name === "covToken") {
-        tokenNoClaimCov = token;
-        return;
-      } 
-      if (token.symbol.toUpperCase() === "DAI") {
-        tokenNoClaimDai = token;
-        return;
-      }
-    });
-
-    poolDataClaim = {
-      swapFee: poolData[poolIdClaim].poolId.swapFee,
-      denormWeightCov: tokenClaimCov.denormWeight,
-      denormWeightDai: tokenClaimDai.denormWeight,
-      balanceCov: tokenClaimCov.balance,
-      balanceDai: tokenClaimDai.balance,
-      priceCov: poolData[poolIdClaim].price
+    poolDataObj = {
+      swapFee: poolData[poolIdentifier].poolId.swapFee,
+      denormWeightCov: tokenCov.denormWeight,
+      denormWeightDai: tokenDai.denormWeight,
+      balanceCov: tokenCov.balance,
+      balanceDai: tokenDai.balance,
+      priceCov: poolData[poolIdentifier].price
     }
 
-    poolDataNoClaim = {
-      swapFee: poolData[poolIdNoClaim].poolId.swapFee,
-      denormWeightCov: tokenNoClaimCov.denormWeight,
-      denormWeightDai: tokenNoClaimDai.denormWeight,
-      balanceCov: tokenNoClaimCov.balance,
-      balanceDai: tokenNoClaimDai.balance,
-      priceCov: poolData[poolIdNoClaim].price
-    }
+    return poolDataObj;
+  }
 
-    // calc based off pool;
+  const calc = (newScenario : string, newType : string, poolIdClaim : string, poolIdNoClaim : string) => {
+    let poolDataClaim : PoolData = findPoolDataObj(poolIdClaim);
+    let poolDataNoClaim : PoolData = findPoolDataObj(poolIdNoClaim);
+
     let prem = cpCalcEarnedPremium(poolDataClaim, mintAmount);
     setPremium(prem);
-    console.log(`Premium: ${prem}`);
 
-    let sf : number;
-    let il : number;
+    let sf : number = 0;
+    let il : number = 0;
 
-    switch (mmcp) {
-      case "mm":
-        if(scenario === "hack") {
+    switch (newType) {
+      case TYPE_MM:
+        if(newScenario === SCENARIO_HACK) {
           [sf, il] = mmCalcSfAndILOnHack([poolDataClaim, poolDataNoClaim], mintAmount);
-          setSwapFees(sf);
-          setImpermanentLoss(il);
         } else {
           [sf, il] = mmCalcSfAndILOnNoHack([poolDataClaim, poolDataNoClaim], mintAmount);
-          setSwapFees(sf);
-          setImpermanentLoss(il);
         }
         break;
-      case "cp":
-        if(scenario === "hack") {
+      case TYPE_CP:
+        if(newScenario === SCENARIO_HACK) {
           [sf, il] = cpCalcSfAndILOnHack(poolDataNoClaim, mintAmount);
-          setSwapFees(sf);
-          setImpermanentLoss(il);
         } else {
           [sf, il] = cpCalcSfAndILOnNoHack(poolDataNoClaim, mintAmount);
-          setSwapFees(sf);
-          setImpermanentLoss(il);
         }
         break;
-      default:
-        break;
     }
+    setSwapFees(sf);
+    setImpermanentLoss(il);
   }
 
   const handleChangeProtocol = (event: any) => {
     setProtocol(event.target.value);
-    calc();
+    let newPoolIdClaim = getMostRelevantPoolBySymbol(protocol, true, props.apiData.poolData)[0];
+    let newPoolIdNoClaim = getMostRelevantPoolBySymbol(protocol, false, props.apiData.poolData)[0];
+    setPoolIdClaim(newPoolIdClaim);
+    setPoolIdNoClaim(newPoolIdNoClaim);
+    calc(scenario, mmcp, newPoolIdClaim, newPoolIdNoClaim);
   };
   const handleChangeMmcp = (event: any) => {
     setMmcp(event.target.value);
-    calc();
+    calc(scenario, event.target.value, poolIdClaim, poolIdNoClaim);
   };
   const handleChangeAmount = (event: any) => {
     setMintAmount(event.target.value);
-    calc();
+    calc(scenario, mmcp, poolIdClaim, poolIdNoClaim);
   };
-  const handleChangeRadio = (event: any) => {
+  const handleChangeScenario = (event: any) => {
     setScenario(event.target.value);
-    calc();
+    calc(event.target.value, mmcp, poolIdClaim, poolIdNoClaim);
   };
 
   const handleOnDelete = (event: any) => {
     props.onRemoval(props.id);
   };
-
-  
 
   return (
     <div>
@@ -224,8 +199,8 @@ const Calc: FC<CalcProps> = (props) => {
             value={mmcp}
             onChange={handleChangeMmcp}
           >
-            <MenuItem value={"mm"}>MM</MenuItem>
-            <MenuItem value={"cp"}>CP</MenuItem>
+            <MenuItem value={TYPE_MM}>MM</MenuItem>
+            <MenuItem value={TYPE_CP}>CP</MenuItem>
           </Select>
         </FormControl>
         <FormControl className={classes.formControl}>
@@ -245,15 +220,15 @@ const Calc: FC<CalcProps> = (props) => {
           <RadioGroup
             name="cov-token"
             value={scenario}
-            onChange={handleChangeRadio}
+            onChange={handleChangeScenario}
           >
             <FormControlLabel
-              value="nohack"
+              value={SCENARIO_NO_HACK}
               control={<Radio size="small" />}
               label="No Hack"
             />
             <FormControlLabel
-              value="hack"
+              value={SCENARIO_HACK}
               control={<Radio size="small" />}
               label="Hack"
             />
@@ -277,8 +252,8 @@ const Calc: FC<CalcProps> = (props) => {
       </Box>
       <Typography className={classes.text}>Premium: {premium}</Typography>
       <Typography className={classes.text}>Bonus Rewards: {bonusRewards} </Typography>
-      <Typography className={classes.text}>Estimated Swap Fees: {sf} </Typography>
-      <Typography className={classes.text}>Impermanent Loss: {il} </Typography>
+      <Typography className={classes.text}>Estimated Swap Fees: {formatCurrency(sf)} </Typography>
+      <Typography className={classes.text}>Impermanent Loss: {formatCurrency(il)} </Typography>
       <Divider />
       <Typography className={classes.subTotalText}>Total:</Typography>
     </div>

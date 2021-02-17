@@ -9,6 +9,8 @@ import AddIcon from '@material-ui/icons/Add';
 import {formatCurrency} from "../utils/formatting";
 import api from "../utils/api.json";
 import Protocol from "../interfaces/Protocol";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import { LinearProgress } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -87,7 +89,7 @@ const Tools = () => {
             </Grid>
           ))
         ) : (
-          <div></div>
+          <LinearProgress />
         )}
         
         <Grid item xs={12} container justify="space-between" alignItems="center" >
@@ -103,7 +105,7 @@ const Tools = () => {
                 Add Coverage
               </Button>
             ) : (
-              <div></div>
+              <CircularProgress />
             )}
           </Grid>
           <Grid item xs={2}>

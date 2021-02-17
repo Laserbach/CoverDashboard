@@ -22,6 +22,7 @@ export const cpCalcEarnedPremium = (poolObj: PoolData, mintAmount: number) : num
  * @returns [swapFees, impermanentLoss]
  */
 export const mmCalcSfAndILOnHack = (poolObj: PoolData[], mintAmount: number) : number[] => {
+  console.log("mm and hack");
   let targetEndPrice = 1;
   let swapFee = poolObj[0].swapFee;
   let denormWeightClaim = poolObj[0].denormWeightCov;
@@ -77,6 +78,7 @@ export const mmCalcSfAndILOnHack = (poolObj: PoolData[], mintAmount: number) : n
  * @returns [swapFees, impermanentLoss]
  */
 export const mmCalcSfAndILOnNoHack = (poolObj: PoolData[], mintAmount: number) : number[] => {
+  console.log("mm and no hack");
   let targetEndPrice = 0.03;
   let swapFee = poolObj[0].swapFee;
   let denormWeightClaim = poolObj[0].denormWeightCov;
@@ -132,6 +134,7 @@ export const mmCalcSfAndILOnNoHack = (poolObj: PoolData[], mintAmount: number) :
  * @returns [swapFees, impermanentLoss]
  */
 export const cpCalcSfAndILOnHack = (poolObj: PoolData, mintAmount: number) : number[] => {
+  console.log("cp and hack");
     const swapFee = poolObj.swapFee;
     const denormWeightNolaim = poolObj.denormWeightCov;
     const denormWeightDai = poolObj.denormWeightDai;
@@ -162,6 +165,7 @@ export const cpCalcSfAndILOnHack = (poolObj: PoolData, mintAmount: number) : num
  * @returns [swapFees, impermanentLoss]
  */
 export const cpCalcSfAndILOnNoHack = (poolObj: PoolData, mintAmount: number) : number[] => {
+  console.log("cp and no hack");
   const swapFee = poolObj.swapFee;
   const denormWeightNolaim = poolObj.denormWeightCov;
   const denormWeightDai = poolObj.denormWeightDai;
