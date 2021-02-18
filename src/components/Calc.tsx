@@ -11,15 +11,15 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import Typography from "@material-ui/core/Typography";
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from "@material-ui/icons/Delete";
 import Button from "@material-ui/core/Button";
 import { Divider } from "@material-ui/core";
 import Protocol from "../interfaces/Protocol";
 import PoolData from "../interfaces/PoolData";
 import {
-  cpCalcEarnedPremium, 
+  cpCalcEarnedPremium,
   mmCalcSfAndILOnHack,
-  mmCalcSfAndILOnNoHack, 
+  mmCalcSfAndILOnNoHack,
   cpCalcSfAndILOnHack,
   cpCalcSfAndILOnNoHack} from "../utils/toolsCalculations";
 import {getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
@@ -61,11 +61,11 @@ const TYPE_MM : string = "mm";
 const TYPE_CP : string = "cp";
 
 interface CalcProps {
-  onChangeTotal: any,
-  onRemoval: any,
-  id: number,
-  protocols: Protocol[],
-  apiData: any
+  onChangeTotal: any;
+  onRemoval: any;
+  id: number;
+  protocols: Protocol[];
+  apiData: any;
 }
 
 const Calc: FC<CalcProps> = (props) => {
@@ -91,7 +91,7 @@ const Calc: FC<CalcProps> = (props) => {
       if(token.name === "covToken") {
         tokenCov = token;
         return;
-      } 
+      }
 
       if (token.symbol.toUpperCase() === "DAI") {
         tokenDai = token;
@@ -185,7 +185,9 @@ const Calc: FC<CalcProps> = (props) => {
             onChange={handleChangeProtocol}
           >
             {props.protocols.map((protocol, index) => (
-              <MenuItem key={index} value={protocol.protocolName.toLowerCase()} >{protocol.protocolDisplayName}</MenuItem>
+              <MenuItem key={index} value={protocol.protocolName.toLowerCase()}>
+                {protocol.protocolDisplayName}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -235,23 +237,25 @@ const Calc: FC<CalcProps> = (props) => {
           </RadioGroup>
         </FormControl>
         <FormControl className={classes.formControl}>
-        {(props.id > 0) ? (
-          <div>
-            <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  onClick={handleOnDelete}
-                  startIcon={<DeleteIcon />}
-                >
-                  Delete
-            </Button>
-          </div>  
-        ) : (<div></div>)}
+          {props.id > 0 ? (
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                onClick={handleOnDelete}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            </div>
+          ) : (
+            <div></div>
+          )}
         </FormControl>
       </Box>
-      <Typography className={classes.text}>Premium: {premium}</Typography>
-      <Typography className={classes.text}>Bonus Rewards: {bonusRewards} </Typography>
+      <Typography className={classes.text}>Premium: {formatCurrency(premium)}</Typography>
+      <Typography className={classes.text}>Bonus Rewards: {formatCurrency(bonusRewards)} </Typography>
       <Typography className={classes.text}>Estimated Swap Fees: {formatCurrency(sf)} </Typography>
       <Typography className={classes.text}>Impermanent Loss: {formatCurrency(il)} </Typography>
       <Divider />
