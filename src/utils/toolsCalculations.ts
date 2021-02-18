@@ -1,6 +1,83 @@
 import PoolData from "../interfaces/PoolData";
 
 /**
+ * 
+ * @param bonusRewardObjs Bonus Reward Objects of CLAIM [0] and NOCLAIM [1] Token
+ * @param tokenPrice price of the protocol in USD
+ * @param mintAmount inputted mint amount
+ * @param poolObjs Pools of CLAIM [0] and NOCLAIM [1] Token
+ */
+export const mmCalcBonusRewards = (
+  bonusRewardObjs: any[],
+  tokenPrice: number,
+  mintAmount: number,
+  poolObjs: PoolData[]
+) : number => {
+  // ##################################################################
+  // ONLY FOR MM, farming bonus rewards (if available) in noclaim + claim pool
+  // ##################################################################
+
+  // COVER API DATA
+  const balanceClaim = poolObjs[0].balanceCov; 
+  const weeklyRewardsClaimPool = bonusRewardObjs[0].weeklyRewards;
+  const endTime = bonusRewardObjs[0].endTime;
+  const weeklyRewardsNoClaimPool = bonusRewardObjs[1].weeklyRewards;
+  const balanceNoClaim = poolObjs[1].balanceCov;
+
+
+  // COINGECKO API
+  const bonusTokenPrice = tokenPrice; // GECKO API - tokenAddr BADGER
+
+  // INPUT DATA
+  const currentUnixTime = new Date().getTime()/1000;
+
+  // BONUS REWARDS CALC
+  const oneWeekUnix = 168 * 3600;
+  const remainingRewardsNoClaimPool = (weeklyRewardsNoClaimPool * (endTime - currentUnixTime)) / (oneWeekUnix);
+  const remainingRewardsClaimPool = (weeklyRewardsClaimPool * (endTime - currentUnixTime)) / (oneWeekUnix);
+
+  const bonusRewardsUsd = ((1/balanceNoClaim)*mintAmount * remainingRewardsNoClaimPool * bonusTokenPrice) + ((1/balanceClaim)*mintAmount * remainingRewardsClaimPool * bonusTokenPrice);
+  return bonusRewardsUsd;
+}
+
+/**
+ * 
+ * @param bonusRewardObj Bonus Reward Object of NOCLAIM Token
+ * @param tokenPrice price of the protocol in USD
+ * @param mintAmount inputted mint amount
+ * @param poolObjNoClaim Pools of NOCLAIM Token
+ */
+export const cpCalcBonusRewards = (
+  bonusRewardObj: any,
+  tokenPrice: number,
+  mintAmount: number,
+  poolObjNoClaim: PoolData
+) : number => {
+  // ##################################################################
+  // ONLY FOR CP, farming bonus rewards (if available) in noclaim pool
+  // ##################################################################
+
+  // COVER API DATA
+  const endTime = bonusRewardObj.endTime; // COVER API - BADGER
+  const weeklyRewardsNoClaimPool = bonusRewardObj.weeklyRewards; // COVER API - BADGER
+  const balanceNoClaim = poolObjNoClaim.balanceCov; // COVER API - BADGER
+
+
+  // COINGECKO API
+  const bonusTokenPrice = tokenPrice; // GECKO API - tokenAddr BADGER
+
+  // INPUT DATA
+  const currentUnixTime = new Date().getTime()/1000;
+
+  // BONUS REWARDS CALC
+  const oneWeekUnix = 168 * 3600;
+  const remainingRewards = (weeklyRewardsNoClaimPool * (endTime - currentUnixTime)) / (oneWeekUnix);
+
+  return (1/balanceNoClaim)*mintAmount * remainingRewards * bonusTokenPrice;
+}
+
+
+/**
  *
  * @param poolObj Pool of CLAIM Token
  * @param mintAmount Inputted Mint Amount

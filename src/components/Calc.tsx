@@ -21,9 +21,12 @@ import {
   mmCalcSfAndILOnHack,
   mmCalcSfAndILOnNoHack,
   cpCalcSfAndILOnHack,
-  cpCalcSfAndILOnNoHack} from "../utils/toolsCalculations";
+  cpCalcSfAndILOnNoHack,
+  cpCalcBonusRewards,
+  mmCalcBonusRewards} from "../utils/toolsCalculations";
 import {getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
 import {formatCurrency} from "../utils/formatting";
+import api from "../utils/api.json";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -111,10 +114,17 @@ const Calc: FC<CalcProps> = (props) => {
     return poolDataObj;
   }
 
-  const calc = (newScenario : string, newType : string, poolIdClaim : string, poolIdNoClaim : string) => {
-    let poolDataClaim : PoolData = findPoolDataObj(poolIdClaim);
-    let poolDataNoClaim : PoolData = findPoolDataObj(poolIdNoClaim);
+  const findBonusRewardData = (bonuses : any) => {
+    let bonusObj : any = undefined;
+    bonuses.forEach((bonus : any) => {
+      if(bonus.endTime*1000 > new Date().getTime()) bonusObj = bonus;
+    });
+    return bonusObj;
+  }
 
+  const calc = (newScenario : string, newType : string, newPoolIdClaim : string, newPoolIdNoClaim : string, newProtocol : string) => {
+    let poolDataClaim : PoolData = findPoolDataObj(newPoolIdClaim);
+    let poolDataNoClaim : PoolData = findPoolDataObj(newPoolIdNoClaim);
     let prem = cpCalcEarnedPremium(poolDataClaim, mintAmount);
     setPremium(prem);
 
@@ -139,27 +149,49 @@ const Calc: FC<CalcProps> = (props) => {
     }
     setSwapFees(sf);
     setImpermanentLoss(il);
+    let protocol : Protocol = props.apiData.protocols.find((p : Protocol) => p.protocolName.toLowerCase() === newProtocol.toLowerCase());
+    if(props.apiData.bonusRewardsData[newPoolIdNoClaim] && props.apiData.bonusRewardsData[newPoolIdClaim]) {
+      // TODO fetch the price only on protocol change, otherwise user will trigger a fetch each time "mintAmount" is changed
+      fetch(api.coingecko_api.simple_price + protocol.protocolTokenAddress)
+      .then((response) => response.json())
+      .then((data) => {
+        let bonusRewardDataNoClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdNoClaim].bonuses);
+        let bonusRewardDataClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdClaim].bonuses);
+        console.log(data);
+        console.log(bonusRewardDataNoClaim);
+        console.log(bonusRewardDataClaim);
+        console.log(protocol);
+        let tokenPrice = data[protocol.protocolTokenAddress.toLowerCase()].usd;
+        let bonus = cpCalcBonusRewards(bonusRewardDataNoClaim, tokenPrice, mintAmount, poolDataNoClaim);
+        if (newType === TYPE_MM) {
+          bonus = mmCalcBonusRewards([bonusRewardDataClaim, bonusRewardDataNoClaim], tokenPrice, mintAmount, [poolDataClaim, poolDataNoClaim]);
+        }
+        setBonusRewards(bonus);
+      });
+    } else {
+      setBonusRewards(0);
+    }
   }
 
   const handleChangeProtocol = (event: any) => {
-    setProtocol(event.target.value);
-    let newPoolIdClaim = getMostRelevantPoolBySymbol(protocol, true, props.apiData.poolData)[0];
-    let newPoolIdNoClaim = getMostRelevantPoolBySymbol(protocol, false, props.apiData.poolData)[0];
+    let newPoolIdClaim = getMostRelevantPoolBySymbol(event.target.value, true, props.apiData.poolData)[0];
+    let newPoolIdNoClaim = getMostRelevantPoolBySymbol(event.target.value, false, props.apiData.poolData)[0];
     setPoolIdClaim(newPoolIdClaim);
     setPoolIdNoClaim(newPoolIdNoClaim);
-    calc(scenario, mmcp, newPoolIdClaim, newPoolIdNoClaim);
+    setProtocol(event.target.value);
+    calc(scenario, mmcp, newPoolIdClaim, newPoolIdNoClaim, event.target.value);
   };
   const handleChangeMmcp = (event: any) => {
     setMmcp(event.target.value);
-    calc(scenario, event.target.value, poolIdClaim, poolIdNoClaim);
+    calc(scenario, event.target.value, poolIdClaim, poolIdNoClaim, protocol);
   };
   const handleChangeAmount = (event: any) => {
     setMintAmount(event.target.value);
-    calc(scenario, mmcp, poolIdClaim, poolIdNoClaim);
+    calc(scenario, mmcp, poolIdClaim, poolIdNoClaim, protocol);
   };
   const handleChangeScenario = (event: any) => {
     setScenario(event.target.value);
-    calc(event.target.value, mmcp, poolIdClaim, poolIdNoClaim);
+    calc(event.target.value, mmcp, poolIdClaim, poolIdNoClaim, protocol);
   };
 
   const handleOnDelete = (event: any) => {

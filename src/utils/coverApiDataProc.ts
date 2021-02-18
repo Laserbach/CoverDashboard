@@ -6,7 +6,7 @@ const SYMBOL_NOCLAIM_IDENTIFIER = "_NOCLAIM";
 export const getMostRelevantPool = (claim: boolean, pools: any) => {
     let secondIdentifier = SYMBOL_CLAIM_IDENTIFIER;
     if(claim === false) secondIdentifier = SYMBOL_NOCLAIM_IDENTIFIER;
-    let liqMax: number = 0;
+    let liqMax: number = -100;
     let poolId: string = "";
 
     for (let pool in pools) {
@@ -22,7 +22,7 @@ export const getMostRelevantPool = (claim: boolean, pools: any) => {
 export const getMostRelevantPoolBySymbol = (symbolName: string, claim: boolean, pools: any) => {
     let secondIdentifier = SYMBOL_CLAIM_IDENTIFIER;
     if(claim === false) secondIdentifier = SYMBOL_NOCLAIM_IDENTIFIER;
-    let liqMax: number = 0;
+    let liqMax: number = -100;
     let poolId: string = "";
     let claimTokenAddr: string = "";
     let symbolIdentifier = `_${symbolName.toUpperCase()}_`;

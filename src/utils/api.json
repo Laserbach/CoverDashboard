@@ -10,6 +10,7 @@
         "base_url": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer"
     },
     "coingecko_api": {
-        "market_endpoint_cover_protocol": "https://api.coingecko.com/api/v3/coins/cover-protocol/market_chart"
+        "market_endpoint_cover_protocol": "https://api.coingecko.com/api/v3/coins/cover-protocol/market_chart",
+        "simple_price" : "https://api.coingecko.com/api/v3/simple/token_price/ethereum?vs_currencies=usd&contract_addresses="
     }
 }
