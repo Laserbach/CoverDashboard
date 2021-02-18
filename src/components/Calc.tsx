@@ -11,18 +11,19 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import Typography from "@material-ui/core/Typography";
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from "@material-ui/icons/Delete";
 import Button from "@material-ui/core/Button";
 import { Divider } from "@material-ui/core";
 import Protocol from "../interfaces/Protocol";
 import PoolData from "../interfaces/PoolData";
 import {
-  cpCalcEarnedPremium, 
+  cpCalcEarnedPremium,
   mmCalcSfAndILOnHack,
-  mmCalcSfAndILOnNoHack, 
+  mmCalcSfAndILOnNoHack,
   cpCalcSfAndILOnHack,
-  cpCalcSfAndILOnNoHack} from "../utils/toolsCalculations";
-import {getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
+  cpCalcSfAndILOnNoHack,
+} from "../utils/toolsCalculations";
+import { getMostRelevantPoolBySymbol } from "../utils/coverApiDataProc";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -54,16 +55,18 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface CalcProps {
-  onChangeTotal: any,
-  onRemoval: any,
-  id: number,
-  protocols: Protocol[],
-  apiData: any
+  onChangeTotal: any;
+  onRemoval: any;
+  id: number;
+  protocols: Protocol[];
+  apiData: any;
 }
 
 const Calc: FC<CalcProps> = (props) => {
   const classes = useStyles();
-  const [protocol, setProtocol] = useState(props.protocols[0].protocolName.toLowerCase());
+  const [protocol, setProtocol] = useState(
+    props.protocols[0].protocolName.toLowerCase()
+  );
   const [mmcp, setMmcp] = useState("mm");
   const [mintAmount, setMintAmount] = useState(1000);
   const [scenario, setScenario] = useState("nohack");
@@ -71,31 +74,38 @@ const Calc: FC<CalcProps> = (props) => {
   const [sf, setSwapFees] = useState(0);
   const [il, setImpermanentLoss] = useState(0);
   const [premium, setPremium] = useState(0);
-  
-  
+
   const calc = () => {
     const poolData = props.apiData.poolData;
-    let poolIdClaim : string;
+    let poolIdClaim: string;
     let poolIdNoClaim: string;
     let claimTokenAddr: string;
     let noClaimTokenAddr: string;
 
     // get pooldata(s) of new protocol
-    [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(protocol, true, poolData);
-    [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(protocol, false, poolData);
+    [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(
+      protocol,
+      true,
+      poolData
+    );
+    [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(
+      protocol,
+      false,
+      poolData
+    );
 
-    let poolDataClaim : PoolData;
-    let poolDataNoClaim : PoolData;
-    let tokenClaimDai : any;
-    let tokenClaimCov : any;
-    let tokenNoClaimDai : any;
-    let tokenNoClaimCov : any;
+    let poolDataClaim: PoolData;
+    let poolDataNoClaim: PoolData;
+    let tokenClaimDai: any;
+    let tokenClaimCov: any;
+    let tokenNoClaimDai: any;
+    let tokenNoClaimCov: any;
 
-    poolData[poolIdClaim].poolId.tokens.forEach((token : any) => {
-      if(token.name === "covToken") {
+    poolData[poolIdClaim].poolId.tokens.forEach((token: any) => {
+      if (token.name === "covToken") {
         tokenClaimCov = token;
         return;
-      } 
+      }
 
       if (token.symbol.toUpperCase() === "DAI") {
         tokenClaimDai = token;
@@ -103,11 +113,11 @@ const Calc: FC<CalcProps> = (props) => {
       }
     });
 
-    poolData[poolIdNoClaim].poolId.tokens.forEach((token : any) => {
-      if(token.name === "covToken") {
+    poolData[poolIdNoClaim].poolId.tokens.forEach((token: any) => {
+      if (token.name === "covToken") {
         tokenNoClaimCov = token;
         return;
-      } 
+      }
       if (token.symbol.toUpperCase() === "DAI") {
         tokenNoClaimDai = token;
         return;
@@ -120,8 +130,8 @@ const Calc: FC<CalcProps> = (props) => {
       denormWeightDai: tokenClaimDai.denormWeight,
       balanceCov: tokenClaimCov.balance,
       balanceDai: tokenClaimDai.balance,
-      priceCov: poolData[poolIdClaim].price
-    }
+      priceCov: poolData[poolIdClaim].price,
+    };
 
     poolDataNoClaim = {
       swapFee: poolData[poolIdNoClaim].poolId.swapFee,
@@ -129,31 +139,39 @@ const Calc: FC<CalcProps> = (props) => {
       denormWeightDai: tokenNoClaimDai.denormWeight,
       balanceCov: tokenNoClaimCov.balance,
       balanceDai: tokenNoClaimDai.balance,
-      priceCov: poolData[poolIdNoClaim].price
-    }
+      priceCov: poolData[poolIdNoClaim].price,
+    };
 
     // calc based off pool;
     let prem = cpCalcEarnedPremium(poolDataClaim, mintAmount);
     setPremium(prem);
     console.log(`Premium: ${prem}`);
 
-    let sf : number;
-    let il : number;
+    let sf: number;
+    let il: number;
 
     switch (mmcp) {
       case "mm":
-        if(scenario === "hack") {
-          [sf, il] = mmCalcSfAndILOnHack([poolDataClaim, poolDataNoClaim], mintAmount);
+        if (scenario === "hack") {
+          [sf, il] = mmCalcSfAndILOnHack(
+            [poolDataClaim, poolDataNoClaim],
+            mintAmount
+          );
+          console.log(poolDataClaim);
+          console.log(poolDataNoClaim);
           setSwapFees(sf);
           setImpermanentLoss(il);
         } else {
-          [sf, il] = mmCalcSfAndILOnNoHack([poolDataClaim, poolDataNoClaim], mintAmount);
+          [sf, il] = mmCalcSfAndILOnNoHack(
+            [poolDataClaim, poolDataNoClaim],
+            mintAmount
+          );
           setSwapFees(sf);
           setImpermanentLoss(il);
         }
         break;
       case "cp":
-        if(scenario === "hack") {
+        if (scenario === "hack") {
           [sf, il] = cpCalcSfAndILOnHack(poolDataNoClaim, mintAmount);
           setSwapFees(sf);
           setImpermanentLoss(il);
@@ -166,7 +184,7 @@ const Calc: FC<CalcProps> = (props) => {
       default:
         break;
     }
-  }
+  };
 
   const handleChangeProtocol = (event: any) => {
     setProtocol(event.target.value);
@@ -189,8 +207,6 @@ const Calc: FC<CalcProps> = (props) => {
     props.onRemoval(props.id);
   };
 
-  
-
   return (
     <div>
       <Box
@@ -210,7 +226,9 @@ const Calc: FC<CalcProps> = (props) => {
             onChange={handleChangeProtocol}
           >
             {props.protocols.map((protocol, index) => (
-              <MenuItem key={index} value={protocol.protocolName.toLowerCase()} >{protocol.protocolDisplayName}</MenuItem>
+              <MenuItem key={index} value={protocol.protocolName.toLowerCase()}>
+                {protocol.protocolDisplayName}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -260,24 +278,30 @@ const Calc: FC<CalcProps> = (props) => {
           </RadioGroup>
         </FormControl>
         <FormControl className={classes.formControl}>
-        {(props.id > 0) ? (
-          <div>
-            <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  onClick={handleOnDelete}
-                  startIcon={<DeleteIcon />}
-                >
-                  Delete
-            </Button>
-          </div>  
-        ) : (<div></div>)}
+          {props.id > 0 ? (
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                onClick={handleOnDelete}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            </div>
+          ) : (
+            <div></div>
+          )}
         </FormControl>
       </Box>
       <Typography className={classes.text}>Premium: {premium}</Typography>
-      <Typography className={classes.text}>Bonus Rewards: {bonusRewards} </Typography>
-      <Typography className={classes.text}>Estimated Swap Fees: {sf} </Typography>
+      <Typography className={classes.text}>
+        Bonus Rewards: {bonusRewards}{" "}
+      </Typography>
+      <Typography className={classes.text}>
+        Estimated Swap Fees: {sf}{" "}
+      </Typography>
       <Typography className={classes.text}>Impermanent Loss: {il} </Typography>
       <Divider />
       <Typography className={classes.subTotalText}>Total:</Typography>
