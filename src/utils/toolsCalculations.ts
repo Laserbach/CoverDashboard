@@ -29,16 +29,11 @@ export const cpCalcEarnedPremium = (
  * @param mintAmount Inputted Mint Amount
  * @returns [swapFees, impermanentLoss]
  */
-<<<<<<< HEAD
-export const mmCalcSfAndILOnHack = (poolObj: PoolData[], mintAmount: number) : number[] => {
-  console.log("mm and hack");
-=======
 export const mmCalcSfAndILOnHack = (
   poolObj: PoolData[],
   mintAmount: number
 ): number[] => {
   // CLAIM POOL
->>>>>>> af9fed09d2b4f4cc9eda94f9bc2ca15131885499
   let targetEndPrice = 1;
   let swapFee = poolObj[0].swapFee;
   let denormWeightClaim = poolObj[0].denormWeightCov;
@@ -104,16 +99,11 @@ export const mmCalcSfAndILOnHack = (
  * @param mintAmount Inputted Mint Amount
  * @returns [swapFees, impermanentLoss]
  */
-<<<<<<< HEAD
-export const mmCalcSfAndILOnNoHack = (poolObj: PoolData[], mintAmount: number) : number[] => {
-  console.log("mm and no hack");
-=======
 export const mmCalcSfAndILOnNoHack = (
   poolObj: PoolData[],
   mintAmount: number
 ): number[] => {
   // CLAIM POOL
->>>>>>> af9fed09d2b4f4cc9eda94f9bc2ca15131885499
   let targetEndPrice = 0.03;
   let swapFee = poolObj[0].swapFee;
   let denormWeightClaim = poolObj[0].denormWeightCov;
@@ -179,32 +169,6 @@ export const mmCalcSfAndILOnNoHack = (
  * @param mintAmount Inputted Mint Amount
  * @returns [swapFees, impermanentLoss]
  */
-<<<<<<< HEAD
-export const cpCalcSfAndILOnHack = (poolObj: PoolData, mintAmount: number) : number[] => {
-  console.log("cp and hack");
-    const swapFee = poolObj.swapFee;
-    const denormWeightNolaim = poolObj.denormWeightCov;
-    const denormWeightDai = poolObj.denormWeightDai;
-    const balanceNoclaim = poolObj.balanceCov;
-    const priceNoclaimToken = poolObj.priceCov;
-    const targetEndPrice = 0.03;
-
-    // CALC SWAP Fees
-    let normalizedWeightDai = ((100 / (denormWeightNolaim + denormWeightDai)) * denormWeightDai) / 100;
-    let slippagePerNoClaim = (1 - swapFee)/(2 * balanceNoclaim * normalizedWeightDai);
-    let noclaimSpent = (1-(targetEndPrice - priceNoclaimToken) / targetEndPrice) / slippagePerNoClaim;
-    let earnedSwapFees = noclaimSpent * targetEndPrice * swapFee;
-
-    // CALC IMPERMANENT LOSS
-    let noclaimPriceChange = ((targetEndPrice * 100) / priceNoclaimToken) / 100;
-    let poolValue = (noclaimPriceChange * (100 - normalizedWeightDai*100)/100) + normalizedWeightDai;
-    let assetValueIfHeld = (noclaimPriceChange ** (1-normalizedWeightDai)) * (1 ** normalizedWeightDai);
-    let impermanenLoss = Math.abs(assetValueIfHeld / poolValue - 1);
-    let il = impermanenLoss * mintAmount;
-
-    return [earnedSwapFees, il];
-}
-=======
 export const cpCalcSfAndILOnHack = (
   poolObj: PoolData,
   mintAmount: number
@@ -238,7 +202,6 @@ export const cpCalcSfAndILOnHack = (
 
   return [earnedSwapFees, il];
 };
->>>>>>> af9fed09d2b4f4cc9eda94f9bc2ca15131885499
 
 /**
  *
@@ -246,16 +209,11 @@ export const cpCalcSfAndILOnHack = (
  * @param mintAmount Inputted Mint Amount
  * @returns [swapFees, impermanentLoss]
  */
-<<<<<<< HEAD
-export const cpCalcSfAndILOnNoHack = (poolObj: PoolData, mintAmount: number) : number[] => {
-  console.log("cp and no hack");
-=======
 export const cpCalcSfAndILOnNoHack = (
   poolObj: PoolData,
   mintAmount: number
 ): number[] => {
   const targetEndPrice = 1;
->>>>>>> af9fed09d2b4f4cc9eda94f9bc2ca15131885499
   const swapFee = poolObj.swapFee;
   const denormWeightNolaim = poolObj.denormWeightCov;
   const denormWeightDai = poolObj.denormWeightDai;
