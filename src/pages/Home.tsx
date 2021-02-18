@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme: Theme) => (
 
 const calcCoverage = (graphData: any, claimTokenAddr: string) => {
   let coverageDemand = 0;
+  console.log(graphData);
   for(let i = 0; graphData.data.pool.swaps.length > i; i++){
       if(graphData.data.pool.swaps[i].tokenOut == claimTokenAddr.toLowerCase()) {
         coverageDemand += parseFloat(graphData.data.pool.swaps[i].value);
@@ -112,6 +113,8 @@ const Home = () => {
             Promise.all(responses.map(r=>r.json()))
               .then(allGraphData => {
                 for(let i = 0; i<allGraphData.length; i++) {
+                  // handle graphQL error, when no data is returned
+                  if(allGraphData[i].data.pool === null) return;
                   coverageDemands[i].coverage = calcCoverage(allGraphData[i], coverageDemands[i].claimTokenAddr);
                 }
                 setCoverageDemands(coverageDemands);
