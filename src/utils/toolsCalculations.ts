@@ -192,7 +192,7 @@ export const mmCalcSfAndILOnHack = (
 
   // TOTAL
   const totalIL = impermanenLossClaim + impermanenLossNoClaim;
-  const il = totalIL * mintAmount;
+  const il = totalIL * mintAmount * -1;
   const totalSF = earnedSwapFeesClaim + earnedSwapFeesNoClaim;
   return [totalSF, il];
 };
@@ -274,7 +274,7 @@ export const mmCalcSfAndILOnNoHack = (
   let impermanenLossNoClaim = Math.abs(assetValueIfHeld / poolValue - 1);
 
   const totalIL = impermanenLossClaim + impermanenLossNoClaim;
-  const il = totalIL * mintAmount;
+  const il = totalIL * mintAmount * -1;
   const totalSF = earnedSwapFeesClaim + earnedSwapFeesNoClaim;
   return [totalSF, il];
 };
@@ -317,7 +317,7 @@ export const cpCalcSfAndILOnHack = (
   let assetValueIfHeld =
     noclaimPriceChange ** (1 - normalizedWeightDai) * 1 ** normalizedWeightDai;
   let impermanenLoss = Math.abs(assetValueIfHeld / poolValue - 1);
-  let il = impermanenLoss * mintAmount;
+  let il = impermanenLoss * mintAmount * -1;
 
   return [earnedSwapFees, il];
 };
@@ -359,7 +359,7 @@ export const cpCalcSfAndILOnNoHack = (
     noclaimPriceChange ** normalizedWeighNoClaim *
     1 ** (1 - normalizedWeighNoClaim);
   let impermanenLoss = Math.abs(assetValueIfHeld / poolValue - 1);
-  let il = impermanenLoss * mintAmount;
+  let il = impermanenLoss * mintAmount * -1;
 
   return [earnedSwapFees, il];
 };
