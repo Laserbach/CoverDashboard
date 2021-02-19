@@ -90,7 +90,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const App: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const pages = ["Dashboard", "Covers", "$COVER"];
+  const pages = ["Dashboard", "Covers", "$COVER", "Tools"];
   const [mobileOpen = false, setMobileOpen] = useState<boolean>();
   const [pageSelected = pages[0], selectPage] = useState<string>();
 
