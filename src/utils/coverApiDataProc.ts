@@ -53,7 +53,7 @@ export const apiDataToTimeseriesRecords = (data: any) => {
         let poolIDClaim: string = getMostRelevantPool(true, pools);
         let poolIDNoClaim: string = getMostRelevantPool(false, pools);
 
-        if (record.protocolData.poolData) {
+        if (record.protocolData.poolData && record.protocolData.poolData[poolIDClaim] && record.protocolData.poolData[poolIDNoClaim]) {
             records.push({
                 timestamp: record.timestamp,
                 claim: {

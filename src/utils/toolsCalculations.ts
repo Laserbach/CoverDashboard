@@ -18,11 +18,11 @@ export const mmCalcBonusRewards = (
   // ##################################################################
 
   // COVER API DATA
-  const balanceClaim = poolObjs[0].balanceCov; 
-  const weeklyRewardsClaimPool = bonusRewardObjs[0].weeklyRewards;
-  const endTime = bonusRewardObjs[0].endTime;
-  const weeklyRewardsNoClaimPool = bonusRewardObjs[1].weeklyRewards;
-  const balanceNoClaim = poolObjs[1].balanceCov;
+  const balanceClaim : number = parseFloat(poolObjs[0].balanceCov + ""); 
+  const weeklyRewardsClaimPool : number = parseFloat(bonusRewardObjs[0].weeklyRewards + "");
+  const endTime : number = parseFloat(bonusRewardObjs[0].endTime + "");
+  const weeklyRewardsNoClaimPool : number = parseFloat(bonusRewardObjs[1].weeklyRewards + "");
+  const balanceNoClaim : number = parseFloat(poolObjs[1].balanceCov + "");
 
 
   // COINGECKO API
@@ -58,16 +58,16 @@ export const cpCalcBonusRewards = (
   // ##################################################################
 
   // COVER API DATA
-  const endTime = bonusRewardObj.endTime; // COVER API - BADGER
-  const weeklyRewardsNoClaimPool = bonusRewardObj.weeklyRewards; // COVER API - BADGER
-  const balanceNoClaim = poolObjNoClaim.balanceCov; // COVER API - BADGER
+  const endTime : number = parseFloat(bonusRewardObj.endTime + ""); // COVER API - BADGER
+  const weeklyRewardsNoClaimPool : number = parseFloat(bonusRewardObj.weeklyRewards + ""); // COVER API - BADGER
+  const balanceNoClaim : number = parseFloat(poolObjNoClaim.balanceCov + ""); // COVER API - BADGER
 
 
   // COINGECKO API
-  const bonusTokenPrice = tokenPrice; // GECKO API - tokenAddr BADGER
+  const bonusTokenPrice : number = parseFloat(tokenPrice + ""); // GECKO API - tokenAddr BADGER
 
   // INPUT DATA
-  const currentUnixTime = new Date().getTime()/1000;
+  const currentUnixTime : number = new Date().getTime()/1000;
 
   // BONUS REWARDS CALC
   const oneWeekUnix = 168 * 3600;
@@ -86,11 +86,11 @@ export const cpCalcEarnedPremium = (
   poolObj: PoolData,
   mintAmount: number
 ): number => {
-  const swapFee = poolObj.swapFee;
-  const denormWeightClaim = poolObj.denormWeightCov;
-  const denormWeightDai = poolObj.denormWeightDai;
-  const balanceClaim = poolObj.balanceCov;
-  const balanceDai = poolObj.balanceDai;
+  const swapFee : number = parseFloat(poolObj.swapFee + "");
+  const denormWeightClaim : number = parseFloat(poolObj.denormWeightCov + "");
+  const denormWeightDai : number = parseFloat(poolObj.denormWeightDai + "");
+  const balanceClaim : number = parseFloat(poolObj.balanceCov + "");
+  const balanceDai : number = parseFloat(poolObj.balanceDai + "");
   // PREMIUM CALCULATION
   return (
     balanceDai *
@@ -111,13 +111,13 @@ export const mmCalcSfAndILOnHack = (
   mintAmount: number
 ): number[] => {
   // CLAIM POOL
-  let targetEndPrice = 1;
-  let swapFee = poolObj[0].swapFee;
-  let denormWeightClaim = poolObj[0].denormWeightCov;
-  let denormWeightDai = poolObj[0].denormWeightDai;
-  let priceClaimToken = poolObj[0].priceCov;
-  let balanceClaim = poolObj[0].balanceCov + mintAmount;
-  let balanceDai = poolObj[0].balanceDai + mintAmount * priceClaimToken;
+  let targetEndPrice : number = 1;
+  let swapFee : number = parseFloat(poolObj[0].swapFee + "");
+  let denormWeightClaim : number = parseFloat(poolObj[0].denormWeightCov + "");
+  let denormWeightDai : number = parseFloat(poolObj[0].denormWeightDai + "");
+  let priceClaimToken : number = parseFloat(poolObj[0].priceCov + "");
+  let balanceClaim : number = parseFloat(poolObj[0].balanceCov + mintAmount + "");
+  let balanceDai : number = parseFloat(poolObj[0].balanceDai + mintAmount * priceClaimToken + "" );
 
   // #################################
   // CALC SF + IL OF CLAIM POOL
@@ -138,10 +138,10 @@ export const mmCalcSfAndILOnHack = (
   // NOCLAIM POOL
   targetEndPrice = 0.03;
   swapFee = poolObj[1].swapFee;
-  let denormWeightNolaim = poolObj[1].denormWeightCov;
+  let denormWeightNolaim : number = poolObj[1].denormWeightCov;
   denormWeightDai = poolObj[1].denormWeightDai;
-  let priceNoclaimToken = poolObj[1].priceCov;
-  let balanceNoclaim = poolObj[1].balanceCov + mintAmount;
+  let priceNoclaimToken : number = poolObj[1].priceCov;
+  let balanceNoclaim : number = poolObj[1].balanceCov + mintAmount;
   balanceDai = poolObj[1].balanceDai + mintAmount * priceNoclaimToken;
 
   // #################################
@@ -181,13 +181,13 @@ export const mmCalcSfAndILOnNoHack = (
   mintAmount: number
 ): number[] => {
   // CLAIM POOL
-  let targetEndPrice = 0.03;
-  let swapFee = poolObj[0].swapFee;
-  let denormWeightClaim = poolObj[0].denormWeightCov;
-  let denormWeightDai = poolObj[0].denormWeightDai;
-  let priceClaimToken = poolObj[0].priceCov;
-  let balanceClaim = poolObj[0].balanceCov + mintAmount;
-  let balanceDai = poolObj[0].balanceDai + mintAmount * priceClaimToken;
+  let targetEndPrice : number = 0.03;
+  let swapFee : number = parseFloat(poolObj[0].swapFee + "");
+  let denormWeightClaim : number = parseFloat(poolObj[0].denormWeightCov + "");
+  let denormWeightDai : number = parseFloat(poolObj[0].denormWeightDai + "");
+  let priceClaimToken : number = parseFloat(poolObj[0].priceCov + "");
+  let balanceClaim : number = parseFloat(poolObj[0].balanceCov + mintAmount + "");
+  let balanceDai : number = parseFloat(poolObj[0].balanceDai + mintAmount * priceClaimToken + "");
 
   // #################################
   // CALC SF + IL OF CLAIM POOL
@@ -211,10 +211,9 @@ export const mmCalcSfAndILOnNoHack = (
   // NOCLAIM POOL
   targetEndPrice = 1;
   swapFee = poolObj[1].swapFee;
-  let denormWeightNolaim = poolObj[1].denormWeightCov;
+  let denormWeightNolaim : number = parseFloat(poolObj[1].denormWeightCov + "");
   denormWeightDai = poolObj[1].denormWeightDai;
-  let priceNoclaimToken = poolObj[1].priceCov;
-  let balanceNoclaim = poolObj[1].balanceCov + mintAmount;
+  let priceNoclaimToken : number = parseFloat(poolObj[1].priceCov + "");
   balanceDai = poolObj[1].balanceDai + mintAmount * priceNoclaimToken;
 
   // #################################
@@ -250,12 +249,12 @@ export const cpCalcSfAndILOnHack = (
   poolObj: PoolData,
   mintAmount: number
 ): number[] => {
-  const targetEndPrice = 0.03;
-  const swapFee = poolObj.swapFee;
-  const denormWeightNolaim = poolObj.denormWeightCov;
-  const denormWeightDai = poolObj.denormWeightDai;
-  const priceNoclaimToken = poolObj.priceCov;
-  const balanceNoclaim = poolObj.balanceCov + mintAmount;
+  const targetEndPrice : number = 0.03;
+  const swapFee : number = parseFloat(poolObj.swapFee + "");
+  const denormWeightNolaim : number = parseFloat(poolObj.denormWeightCov + "");
+  const denormWeightDai : number = parseFloat(poolObj.denormWeightDai + "");
+  const priceNoclaimToken : number = parseFloat(poolObj.priceCov + "");
+  const balanceNoclaim : number = parseFloat(poolObj.balanceCov + mintAmount + "");
 
   // CALC SWAP Fees
   let normalizedWeightDai =
@@ -290,12 +289,12 @@ export const cpCalcSfAndILOnNoHack = (
   poolObj: PoolData,
   mintAmount: number
 ): number[] => {
-  const targetEndPrice = 1;
-  const swapFee = poolObj.swapFee;
-  const denormWeightNolaim = poolObj.denormWeightCov;
-  const denormWeightDai = poolObj.denormWeightDai;
-  const priceNoclaimToken = poolObj.priceCov;
-  const balanceDai = poolObj.balanceDai + mintAmount;
+  const targetEndPrice : number = 1;
+  const swapFee : number = parseFloat(poolObj.swapFee + "");
+  const denormWeightNolaim : number = parseFloat(poolObj.denormWeightCov + "");
+  const denormWeightDai : number = parseFloat(poolObj.denormWeightDai + "");
+  const priceNoclaimToken : number = parseFloat(poolObj.priceCov + "");
+  const balanceDai : number = parseFloat(poolObj.balanceDai + mintAmount + "");
 
   // CALC SWAP Fees
   let normalizedWeighNoClaim =
