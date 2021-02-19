@@ -83,6 +83,7 @@ const Calc: FC<CalcProps> = (props) => {
   const [sf, setSwapFees] = useState(0);
   const [il, setImpermanentLoss] = useState(0);
   const [premium, setPremium] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const findPoolDataObj = (poolIdentifier : string) => {
     const poolData = props.apiData.poolData;
@@ -126,13 +127,13 @@ const Calc: FC<CalcProps> = (props) => {
     let poolDataClaim : PoolData = findPoolDataObj(newPoolIdClaim);
     let poolDataNoClaim : PoolData = findPoolDataObj(newPoolIdNoClaim);
     let prem = cpCalcEarnedPremium(poolDataClaim, mintAmount);
-    setPremium(prem);
-
     let sf : number = 0;
     let il : number = 0;
 
     switch (newType) {
       case TYPE_MM:
+        setPremium(0);
+        prem = 0;
         if(newScenario === SCENARIO_HACK) {
           [sf, il] = mmCalcSfAndILOnHack([poolDataClaim, poolDataNoClaim], mintAmount);
         } else {
@@ -140,6 +141,7 @@ const Calc: FC<CalcProps> = (props) => {
         }
         break;
       case TYPE_CP:
+        setPremium(prem);
         if(newScenario === SCENARIO_HACK) {
           [sf, il] = cpCalcSfAndILOnHack(poolDataNoClaim, mintAmount);
         } else {
@@ -149,6 +151,7 @@ const Calc: FC<CalcProps> = (props) => {
     }
     setSwapFees(sf);
     setImpermanentLoss(il);
+    let bonus = 0;
     let protocol : Protocol = props.apiData.protocols.find((p : Protocol) => p.protocolName.toLowerCase() === newProtocol.toLowerCase());
     if(props.apiData.bonusRewardsData[newPoolIdNoClaim] && props.apiData.bonusRewardsData[newPoolIdClaim]) {
       // TODO fetch the price only on protocol change, otherwise user will trigger a fetch each time "mintAmount" is changed
@@ -157,20 +160,17 @@ const Calc: FC<CalcProps> = (props) => {
       .then((data) => {
         let bonusRewardDataNoClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdNoClaim].bonuses);
         let bonusRewardDataClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdClaim].bonuses);
-        console.log(data);
-        console.log(bonusRewardDataNoClaim);
-        console.log(bonusRewardDataClaim);
-        console.log(protocol);
         let tokenPrice = data[protocol.protocolTokenAddress.toLowerCase()].usd;
-        let bonus = cpCalcBonusRewards(bonusRewardDataNoClaim, tokenPrice, mintAmount, poolDataNoClaim);
+        bonus = cpCalcBonusRewards(bonusRewardDataNoClaim, tokenPrice, mintAmount, poolDataNoClaim);
         if (newType === TYPE_MM) {
           bonus = mmCalcBonusRewards([bonusRewardDataClaim, bonusRewardDataNoClaim], tokenPrice, mintAmount, [poolDataClaim, poolDataNoClaim]);
         }
-        setBonusRewards(bonus);
+        
       });
-    } else {
-      setBonusRewards(0);
     }
+    setBonusRewards(bonus);
+    setTotal(prem + bonus + sf + il);
+    props.onChangeTotal(prem + bonus + sf + il, props.id);
   }
 
   const handleChangeProtocol = (event: any) => {
@@ -291,7 +291,7 @@ const Calc: FC<CalcProps> = (props) => {
       <Typography className={classes.text}>Estimated Swap Fees: {formatCurrency(sf)} </Typography>
       <Typography className={classes.text}>Impermanent Loss: {formatCurrency(il)} </Typography>
       <Divider />
-      <Typography className={classes.subTotalText}>Total:</Typography>
+      <Typography className={classes.subTotalText}>Total: {formatCurrency(total)}</Typography>
     </div>
   );
 };

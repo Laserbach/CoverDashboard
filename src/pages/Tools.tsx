@@ -33,8 +33,9 @@ const Tools = () => {
   const classes = useStyles();
 
   const handleOnChangeTotal = (subtotal: number, itemId: number) => {
-    totals[itemId] = subtotal;
-    setTotals(totals);
+    let items = [... totals];
+    items[itemId] = subtotal;
+    setTotals(items);
   }
 
   const handleOnItemRemoval = (itemId: number) => {
@@ -70,7 +71,7 @@ const Tools = () => {
 
   const addItem = () => {
     setItems((p) => [...p, items.length]);
-    setTotals((t) => [...t, 10]);
+    setTotals((t) => [...t, 0]);
   };
 
   return (
