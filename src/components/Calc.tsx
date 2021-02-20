@@ -66,7 +66,7 @@ const TYPE_CP : string = "cp";
 interface CalcProps {
   onChangeTotal: any;
   onRemoval: any;
-  id: number;
+  id: string;
   protocols: Protocol[];
   apiData: any;
 }
@@ -84,6 +84,7 @@ const Calc: FC<CalcProps> = (props) => {
   const [il, setImpermanentLoss] = useState(0);
   const [premium, setPremium] = useState(0);
   const [total, setTotal] = useState(0);
+  const [tokenPrice, setTokenPrice] = useState(0);
 
   const findPoolDataObj = (poolIdentifier : string) => {
     const poolData = props.apiData.poolData;
@@ -117,16 +118,19 @@ const Calc: FC<CalcProps> = (props) => {
 
   const findBonusRewardData = (bonuses : any) => {
     let bonusObj : any = undefined;
-    bonuses.forEach((bonus : any) => {
-      if(bonus.endTime*1000 > new Date().getTime()) bonusObj = bonus;
-    });
+    if(bonuses) {
+      bonuses.forEach((bonus : any) => {
+        if(bonus.endTime*1000 > new Date().getTime()) bonusObj = bonus;
+      });
+    }
     return bonusObj;
   }
 
-  const calc = (newScenario : string, newType : string, newPoolIdClaim : string, newPoolIdNoClaim : string, newProtocol : string) => {
+  const calc = (newScenario : string, newType : string, newPoolIdClaim : string, newPoolIdNoClaim : string, newProtocol : string, newMintAmount : number, 
+    newTokenPrice : number) => {
     let poolDataClaim : PoolData = findPoolDataObj(newPoolIdClaim);
     let poolDataNoClaim : PoolData = findPoolDataObj(newPoolIdNoClaim);
-    let prem = cpCalcEarnedPremium(poolDataClaim, mintAmount);
+    let prem = cpCalcEarnedPremium(poolDataClaim, newMintAmount);
     let sf : number = 0;
     let il : number = 0;
 
@@ -135,38 +139,32 @@ const Calc: FC<CalcProps> = (props) => {
         setPremium(0);
         prem = 0;
         if(newScenario === SCENARIO_HACK) {
-          [sf, il] = mmCalcSfAndILOnHack([poolDataClaim, poolDataNoClaim], mintAmount);
+          [sf, il] = mmCalcSfAndILOnHack([poolDataClaim, poolDataNoClaim], newMintAmount);
         } else {
-          [sf, il] = mmCalcSfAndILOnNoHack([poolDataClaim, poolDataNoClaim], mintAmount);
+          [sf, il] = mmCalcSfAndILOnNoHack([poolDataClaim, poolDataNoClaim], newMintAmount);
         }
         break;
       case TYPE_CP:
         setPremium(prem);
         if(newScenario === SCENARIO_HACK) {
-          [sf, il] = cpCalcSfAndILOnHack(poolDataNoClaim, mintAmount);
+          [sf, il] = cpCalcSfAndILOnHack(poolDataNoClaim, newMintAmount);
         } else {
-          [sf, il] = cpCalcSfAndILOnNoHack(poolDataNoClaim, mintAmount);
+          [sf, il] = cpCalcSfAndILOnNoHack(poolDataNoClaim, newMintAmount);
         }
         break;
     }
     setSwapFees(sf);
     setImpermanentLoss(il);
     let bonus = 0;
-    let protocol : Protocol = props.apiData.protocols.find((p : Protocol) => p.protocolName.toLowerCase() === newProtocol.toLowerCase());
     if(props.apiData.bonusRewardsData[newPoolIdNoClaim] && props.apiData.bonusRewardsData[newPoolIdClaim]) {
-      // TODO fetch the price only on protocol change, otherwise user will trigger a fetch each time "mintAmount" is changed
-      fetch(api.coingecko_api.simple_price + protocol.protocolTokenAddress)
-      .then((response) => response.json())
-      .then((data) => {
-        let bonusRewardDataNoClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdNoClaim].bonuses);
-        let bonusRewardDataClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdClaim].bonuses);
-        let tokenPrice = data[protocol.protocolTokenAddress.toLowerCase()].usd;
-        bonus = cpCalcBonusRewards(bonusRewardDataNoClaim, tokenPrice, mintAmount, poolDataNoClaim);
+      let bonusRewardDataNoClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdNoClaim].bonuses);
+      let bonusRewardDataClaim : any = findBonusRewardData(props.apiData.bonusRewardsData[newPoolIdClaim].bonuses);
+      if (bonusRewardDataNoClaim && bonusRewardDataClaim) {
+        bonus = cpCalcBonusRewards(bonusRewardDataNoClaim, newTokenPrice, newMintAmount, poolDataNoClaim);
         if (newType === TYPE_MM) {
-          bonus = mmCalcBonusRewards([bonusRewardDataClaim, bonusRewardDataNoClaim], tokenPrice, mintAmount, [poolDataClaim, poolDataNoClaim]);
+          bonus = mmCalcBonusRewards([bonusRewardDataClaim, bonusRewardDataNoClaim], newTokenPrice, newMintAmount, [poolDataClaim, poolDataNoClaim]);
         }
-        
-      });
+      }
     }
     setBonusRewards(bonus);
     setTotal(prem + bonus + sf + il);
@@ -176,22 +174,30 @@ const Calc: FC<CalcProps> = (props) => {
   const handleChangeProtocol = (event: any) => {
     let newPoolIdClaim = getMostRelevantPoolBySymbol(event.target.value, true, props.apiData.poolData)[0];
     let newPoolIdNoClaim = getMostRelevantPoolBySymbol(event.target.value, false, props.apiData.poolData)[0];
-    setPoolIdClaim(newPoolIdClaim);
-    setPoolIdNoClaim(newPoolIdNoClaim);
-    setProtocol(event.target.value);
-    calc(scenario, mmcp, newPoolIdClaim, newPoolIdNoClaim, event.target.value);
+    let protocol : Protocol = props.apiData.protocols.find((p : Protocol) => p.protocolName.toLowerCase() === event.target.value.toLowerCase());
+    fetch(api.coingecko_api.simple_price + protocol.protocolTokenAddress)
+      .then((response) => response.json())
+      .then((data) => {
+        let queriedTokenPrice = data[protocol.protocolTokenAddress.toLowerCase()].usd;
+        setTokenPrice(queriedTokenPrice);
+        setPoolIdClaim(newPoolIdClaim);
+        setPoolIdNoClaim(newPoolIdNoClaim);
+        setProtocol(event.target.value);
+        calc(scenario, mmcp, newPoolIdClaim, newPoolIdNoClaim, event.target.value, mintAmount, queriedTokenPrice);
+      });
   };
+
   const handleChangeMmcp = (event: any) => {
     setMmcp(event.target.value);
-    calc(scenario, event.target.value, poolIdClaim, poolIdNoClaim, protocol);
+    calc(scenario, event.target.value, poolIdClaim, poolIdNoClaim, protocol, mintAmount, tokenPrice);
   };
-  const handleChangeAmount = (event: any) => {
+  const handleChangeMintAmount = (event: any) => {
     setMintAmount(event.target.value);
-    calc(scenario, mmcp, poolIdClaim, poolIdNoClaim, protocol);
+    calc(scenario, mmcp, poolIdClaim, poolIdNoClaim, protocol, event.target.value, tokenPrice);
   };
   const handleChangeScenario = (event: any) => {
     setScenario(event.target.value);
-    calc(event.target.value, mmcp, poolIdClaim, poolIdNoClaim, protocol);
+    calc(event.target.value, mmcp, poolIdClaim, poolIdNoClaim, protocol, mintAmount, tokenPrice);
   };
 
   const handleOnDelete = (event: any) => {
@@ -244,7 +250,7 @@ const Calc: FC<CalcProps> = (props) => {
           <Input
             id="mint-amount"
             value={mintAmount}
-            onChange={handleChangeAmount}
+            onChange={handleChangeMintAmount}
             type="number"
             placeholder="Mint Amount"
           />
@@ -269,9 +275,7 @@ const Calc: FC<CalcProps> = (props) => {
           </RadioGroup>
         </FormControl>
         <FormControl className={classes.formControl}>
-          {props.id > 0 ? (
-            <div>
-              <Button
+        <Button
                 variant="contained"
                 color="primary"
                 className={classes.button}
@@ -279,11 +283,7 @@ const Calc: FC<CalcProps> = (props) => {
                 startIcon={<DeleteIcon />}
               >
                 Delete
-              </Button>
-            </div>
-          ) : (
-            <div></div>
-          )}
+          </Button>
         </FormControl>
       </Box>
       <Typography className={classes.text}>Premium: {formatCurrency(premium)}</Typography>

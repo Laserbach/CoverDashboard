@@ -29,61 +29,73 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const Tools = () => {
   const classes = useStyles();
 
-  const handleOnChangeTotal = (subtotal: number, itemId: number) => {
-    let items = [... totals];
-    items[itemId] = subtotal;
-    setTotals(items);
+  const handleOnChangeTotal = (subtotal: number, itemId: string) => {
+    let newPositions = [... positions];
+    let positionToChange = newPositions.find(p => p.id === itemId);
+    positionToChange.total = subtotal;
+    setPositions(newPositions);
   }
 
-  const handleOnItemRemoval = (itemId: number) => {
-    setTotals(totals.filter((itemValue, itemIndex, arr) => {
-      return itemIndex != itemId;
-    }));
-
-    // TODO: For some reason, it deletes multiple entries with this function, no idea how.
-    setItems(items.filter((itemValue, itemIndex, arr) => {
-      return itemIndex != itemId;
-    }));
+  const handleOnItemRemoval = (itemId: string) => {
+    let newPositions = [... positions];
+    newPositions = newPositions.filter((position, i, arr) => {
+      return position.id != itemId;
+    })
+    setPositions(newPositions);
   }
 
-  const [totals, setTotals] = useState<number[]>([0]);
   const [protocols, setProtocols] = useState<Protocol[]>();
   const [apiData, setApiData] = useState<any>();
-  const [items, setItems] = useState<number[]>([0]);
+  const [positions, setPositions] = useState<any[]>([{id: uuidv4(), total: 0}]);
 
   useEffect(() => {
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
-        let protocols = data.protocols.filter((protocol: Protocol) => protocol.protocolName);
+        let protocols = data.protocols.filter((protocol: Protocol) => protocol.protocolActive === true && protocol.protocolTokenAddress != "");
         protocols.sort((pA: Protocol, pB: Protocol) => {
           if (pA.protocolName < pB.protocolName) { return -1; }
-          if (pA.protocolName > pB.protocolName) { return 1;  }
+          if (pA.protocolName > pB.protocolName) { return  1; }
           return 0;
         });
         setProtocols(protocols);
+        console.log(protocols);
         setApiData(data);
       });
   }, []);
 
   const addItem = () => {
-    setItems((p) => [...p, items.length]);
-    setTotals((t) => [...t, 0]);
+    setPositions((p) => [...p, {id: uuidv4(), total: 0}]);
   };
+
+  const calcTotal = () : number => {
+    let total = 0;
+    positions.forEach((pos) => {
+      total += pos.total;
+    });
+    return total;
+  }
 
   return (
     <div>
       <Grid container spacing={3} justify="space-evenly">
         {protocols && apiData ? (
-          items.map((item, index) => (
-            <Grid item xs={12} key={index}>
+          positions.map((position, index) => (
+            <Grid item xs={12} key={position.id}>
               <Card className={classes.root}>
                 <Grid container justify="space-evenly" alignItems="center">
                   <Grid item xs={12}>
-                    <Calc id={item} onChangeTotal={handleOnChangeTotal} onRemoval={handleOnItemRemoval} protocols={protocols} apiData={apiData} />
+                    <Calc id={position.id} onChangeTotal={handleOnChangeTotal} onRemoval={handleOnItemRemoval} protocols={protocols} apiData={apiData} />
                   </Grid>
                 </Grid>
               </Card>
@@ -110,7 +122,7 @@ const Tools = () => {
             )}
           </Grid>
           <Grid item xs={2}>
-            <Typography variant="h6" className={classes.totalText}>Total: {formatCurrency(totals.reduce((A, B) => A+B))}</Typography>
+            <Typography variant="h6" className={classes.totalText}>Total: {formatCurrency(calcTotal())}</Typography>
           </Grid>
         </Grid>
       </Grid>
