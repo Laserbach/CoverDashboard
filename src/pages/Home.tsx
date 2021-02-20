@@ -12,7 +12,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import TVLProtocolsAreaChart from "../components/TVLChart";
 import CoverageDemand from "../interfaces/CoverageDemand";
 import {formatCurrency} from "../utils/formatting";
-interface collateralRecord {
+interface CollateralRecord {
   timestamp: number,
   collateralStakedValue: number
 }
@@ -65,7 +65,7 @@ const Home = () => {
   const theme = useTheme();
   const [protocols, setProtocols] = useState<Protocol[]>();
   const [demands, setCoverageDemands] = useState<CoverageDemand[]>();
-  const [csvs, setCollateralStakedVales] = useState<collateralRecord[]>();
+  const [csvs, setCollateralStakedVales] = useState<CollateralRecord[]>();
 
   /**
    * Fetches data from TheGraph for all supporting protocols and sets the state (the lowest chart)
@@ -73,53 +73,53 @@ const Home = () => {
    */
   const fetchAndSetCoverageDemands = (filteredProtocols: Protocol[], data: any) => {
     let coverageDemands: CoverageDemand[] = [];
-        filteredProtocols.forEach((p: Protocol) => {
-          let name = p.protocolName;
-          let [poolId, claimTokenAddr] = getMostRelevantPoolBySymbol(name, true, data.poolData);
-          let coverage = 0;
-          coverageDemands.push({
-            protocolName: name,
-            poolId: poolId,
-            coverage: coverage,
-            claimTokenAddr: claimTokenAddr
-          })
+    filteredProtocols.forEach((p: Protocol) => {
+      let name = p.protocolName;
+      let [poolId, claimTokenAddr] = getMostRelevantPoolBySymbol(name, true, data.poolData);
+      let coverage = 0;
+      coverageDemands.push({
+        protocolName: name,
+        poolId: poolId,
+        coverage: coverage,
+        claimTokenAddr: claimTokenAddr
+      })
 
-        });
-        
-        let graphRequests = coverageDemands.map(d => fetch(api.the_graph_api.base_url, {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({query: `{
-            pool (id: "${d.poolId}") {
-              totalSwapVolume
-              totalSwapFee
-              tokens {
-                symbol
-                address
-              }
-              swaps {
-                tokenOut
-                value
-              }
+    });
+    
+    let graphRequests = coverageDemands.map(d => fetch(api.the_graph_api.base_url, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({query: `{
+        pool (id: "${d.poolId}") {
+          totalSwapVolume
+          totalSwapFee
+          tokens {
+            symbol
+            address
+          }
+          swaps {
+            tokenOut
+            value
+          }
+        }
+      }`})
+    }));
+
+    Promise.all(graphRequests)
+      .then((responses) => {
+        Promise.all(responses.map(r=>r.json()))
+          .then(allGraphData => {
+            for(let i = 0; i<allGraphData.length; i++) {
+              // handle graphQL error, when no data is returned
+              if(allGraphData[i].data.pool === null) return;
+              coverageDemands[i].coverage = calcCoverage(allGraphData[i], coverageDemands[i].claimTokenAddr);
             }
-          }`})
-        }));
-
-        Promise.all(graphRequests)
-          .then((responses) => {
-            Promise.all(responses.map(r=>r.json()))
-              .then(allGraphData => {
-                for(let i = 0; i<allGraphData.length; i++) {
-                  // handle graphQL error, when no data is returned
-                  if(allGraphData[i].data.pool === null) return;
-                  coverageDemands[i].coverage = calcCoverage(allGraphData[i], coverageDemands[i].claimTokenAddr);
-                }
-                setCoverageDemands(coverageDemands);
-              })
+            setCoverageDemands(coverageDemands);
           })
+      })
   }
 
   useEffect(() => {
@@ -162,7 +162,7 @@ const Home = () => {
                   setCSVsForAnyTimestamp(records, timestamps, allCSV);
                 });
 
-                let collaterals: collateralRecord[] = [];
+                let collaterals: CollateralRecord[] = [];
                 for (let i = 0; i< timestamps.length; i++) {
                   collaterals.push({
                     timestamp: timestamps[i],
@@ -174,15 +174,24 @@ const Home = () => {
           })
       });
   }, []);
-    return (
+  
+  const calculateTVL = (protocols : Protocol[]) : number => {
+    let tvl = 0;
+    protocols.forEach((p) => {
+      tvl += p.coverObjects[0].collateralStakedValue;
+    })
+    return tvl;
+  }
+
+  return (
     <div>
       <Grid container spacing={3} justify="space-evenly" style={{paddingLeft: "3%", paddingRight: "3%"}}>
         <Grid item xs={12} sm={6}>
           <Paper className={classes.paper}>
             <Grid container justify="space-between" alignContent="center">
               <p className={classes.infoCard}>Total Value Locked</p>
-              {csvs ? (
-                    <p className={classes.infoCard}>{formatCurrency(csvs[csvs.length-1].collateralStakedValue)}</p>
+              {protocols ? (
+                    <p className={classes.infoCard}>{formatCurrency(calculateTVL(protocols))}</p>
                   ) : (
                     <LinearProgress color="primary" />
               )}
