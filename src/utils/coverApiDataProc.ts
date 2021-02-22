@@ -1,4 +1,6 @@
+import { isReturnStatement } from "typescript";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
+import api from "../utils/api.json";
 
 const SYMBOL_CLAIM_IDENTIFIER = "_CLAIM";
 const SYMBOL_NOCLAIM_IDENTIFIER = "_NOCLAIM";
@@ -43,12 +45,12 @@ export const getMostRelevantPoolBySymbol = (symbolName: string, claim: boolean, 
     return [poolId, claimTokenAddr];
 }
 
-export const apiDataToTimeseriesRecords = (data: any) => {
+export const apiDataToTimeseriesRecords = (data: any[]) => {
     let records: TimeseriesRecord[] = [];
     let lastClaimVol : number = 0;
     let lastNoClaimVol : number = 0;
 
-    for (let record of data["Items"]) {
+    for (let record of data) {
         let pools = record.protocolData.poolData;
         let poolIDClaim: string = getMostRelevantPool(true, pools);
         let poolIDNoClaim: string = getMostRelevantPool(false, pools);
@@ -81,6 +83,23 @@ export const apiDataToTimeseriesRecords = (data: any) => {
     // (otherwise first record would be an enormous spike in volume)
     records.shift();
     return records;
+}
+
+export const getAllTimeseriesDataOfProtocol = async (protocol: string) => {
+    let items : any[] = [];
+    const currentTime = new Date().getTime();
+    let startTimestamp = 0;
+    
+    while(currentTime - startTimestamp > 1000 * 60 * 60) {
+        const response = await fetch(`${api.cover_api.timeseries_endpoint}?startTimestamp=${startTimestamp}&endTimestamp=${currentTime}&protocol=${protocol}`);
+        const json = await response.json();
+        items = items.concat(json["Items"]);
+
+        // we've reached the last items when LastEvaluatedKey prop is missing in json, so we break there
+        if(!json["LastEvaluatedKey"]) break;
+        startTimestamp = json["LastEvaluatedKey"].timestamp;
+    }
+    return items;
 }
 
 export const filterVolumeRecords = (records: TimeseriesRecord[], ms: number) => {
@@ -118,11 +137,11 @@ export const getRecordsNotOlderThan = (records: TimeseriesRecord[], timeInMS: nu
  * Finds all Timeseries Records with each distinct Timestamp of multiple Responses from Cover API.
  * @param allTimeseriesData array of JSON responses of the Timeseries Endpoint from Cover API
  */
-export const findAllRecordsAndDistinctTimestamps = (allTimeseriesData: any[]) : [number[], TimeseriesRecord[][]] => {
+export const findAllRecordsAndDistinctTimestamps = (allTimeseriesData: any[][]) : [number[], TimeseriesRecord[][]] => {
     let distinctTimestamps = new Map<number, number>();
     let allRecords: TimeseriesRecord[][] = [];
-    allTimeseriesData.forEach((data) => {
-        let records: TimeseriesRecord[] = apiDataToTimeseriesRecords(data);
+    allTimeseriesData.forEach((items) => {
+        let records: TimeseriesRecord[] = apiDataToTimeseriesRecords(items);
         allRecords.push(records);
         records.forEach((record) => {
             distinctTimestamps.set(record.timestamp, 0);

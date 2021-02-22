@@ -7,7 +7,7 @@ import ProtocolsBarChart from "../components/ProtocolsBarChart";
 import Protocol from "../interfaces/Protocol";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import api from "../utils/api.json";
-import {getMostRelevantPoolBySymbol, setCSVsForAnyTimestamp, findAllRecordsAndDistinctTimestamps} from "../utils/coverApiDataProc";
+import {getMostRelevantPoolBySymbol, setCSVsForAnyTimestamp, findAllRecordsAndDistinctTimestamps, getAllTimeseriesDataOfProtocol} from "../utils/coverApiDataProc";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import TVLProtocolsAreaChart from "../components/TVLChart";
 import CoverageDemand from "../interfaces/CoverageDemand";
@@ -114,7 +114,10 @@ const Home = () => {
           .then(allGraphData => {
             for(let i = 0; i<allGraphData.length; i++) {
               // handle graphQL error, when no data is returned
-              if(allGraphData[i].data.pool === null) return;
+              if(allGraphData[i].data.pool === null) {
+                setCoverageDemands([]);
+                return;
+              }
               coverageDemands[i].coverage = calcCoverage(allGraphData[i], coverageDemands[i].claimTokenAddr);
             }
             setCoverageDemands(coverageDemands);
@@ -123,6 +126,34 @@ const Home = () => {
   }
 
   useEffect(() => {
+    const fetchAndSetTVLChart = async (filteredProtocols : Protocol[]) => {
+      // now we need to get the timeseries data of each protocol
+      // for that, we need to fetch each protocol and sum up the csv as there's no endpoint in the api for timeseries data of ALL protocols
+      let requests : any[] = [];
+      filteredProtocols.forEach((p) => {
+        requests.push(getAllTimeseriesDataOfProtocol(p.protocolName));
+      });
+
+      Promise.all(requests).then((allItems) => {
+        let [timestamps, allRecords] = findAllRecordsAndDistinctTimestamps(allItems); 
+        let allCSV: number[] = new Array(timestamps.length);
+        allCSV.fill(0);
+
+        allRecords.forEach((records: TimeseriesRecord[]) => {
+          setCSVsForAnyTimestamp(records, timestamps, allCSV);
+        });
+
+        let collaterals: CollateralRecord[] = [];
+        for (let i = 0; i< timestamps.length; i++) {
+          collaterals.push({
+            timestamp: timestamps[i],
+            collateralStakedValue: allCSV[i]
+          })
+        }
+        setCollateralStakedVales(collaterals);
+      })
+    }
+
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {      
@@ -138,40 +169,8 @@ const Home = () => {
           return b.coverObjects[0].collateralStakedValue - a.coverObjects[0].collateralStakedValue;
         })
         setProtocols(filteredProtocols);
-        console.log(filteredProtocols);
-        
         fetchAndSetCoverageDemands(filteredProtocols, data);
-
-        // now we need to get the timeseries data of each protocol
-        // for that, we need to fetch each protocol and sum up the csv as there's no endpoint in the api for that
-        let urls : string[] = [];
-        filteredProtocols.forEach((p: Protocol) => {
-          urls.push(api.cover_api.timeseries_data_all+p.protocolName);
-        });
-
-        let requests = urls.map(url => fetch(url));
-        Promise.all(requests)
-          .then((responses) => {
-            Promise.all(responses.map(r=>r.json()))
-              .then(dataArr => {
-                let [timestamps, allRecords] = findAllRecordsAndDistinctTimestamps(dataArr); 
-                let allCSV: number[] = new Array(timestamps.length);
-                allCSV.fill(0);
-
-                allRecords.forEach((records: TimeseriesRecord[]) => {
-                  setCSVsForAnyTimestamp(records, timestamps, allCSV);
-                });
-
-                let collaterals: CollateralRecord[] = [];
-                for (let i = 0; i< timestamps.length; i++) {
-                  collaterals.push({
-                    timestamp: timestamps[i],
-                    collateralStakedValue: allCSV[i]
-                  })
-                }
-                setCollateralStakedVales(collaterals);
-              })
-          })
+        fetchAndSetTVLChart(filteredProtocols);
       });
   }, []);
   

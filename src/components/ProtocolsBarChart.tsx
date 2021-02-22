@@ -68,7 +68,7 @@ const ProtocolBarChart: FC<ProtocolsBarChart> = (props) => {
      ):(
     <Grid container justify="center" alignContent="center" style={{height: "100%"}}>
       <Typography variant="h6" gutterBottom>
-        No current data found 📉
+        No current data found, try again later 📉
       </Typography>
     </Grid>
     )}

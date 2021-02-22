@@ -12,7 +12,7 @@ import ProtocolPriceChart from '../components/ProtocolPriceChart';
 import ProtocolLiquidityChart from '../components/ProtocolLiquidityChart';
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
-import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol} from "../utils/coverApiDataProc";
+import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol, getAllTimeseriesDataOfProtocol} from "../utils/coverApiDataProc";
 import {getAllTypes, getAllTimes} from "../utils/chartTimeAndType";
 import {formatCurrency, formatToInteger} from "../utils/formatting";
 import Protocol from "../interfaces/Protocol";
@@ -210,12 +210,15 @@ const Cover: FC<PropsProtocol> = (props) => {
     return coverObj;
   }
 
-  useEffect(() => {
-    fetch(`${api.cover_api.timeseries_data_all+props.match.params.cover}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setTimeseriesData(apiDataToTimeseriesRecords(data))
-      });
+  useEffect(() => {    
+    const fetchTimeseriesData = async () => {
+      let items = await getAllTimeseriesDataOfProtocol(props.match.params.cover.toLowerCase());
+      console.log(items);
+      setTimeseriesData(apiDataToTimeseriesRecords(items))
+    }
+
+    fetchTimeseriesData();
+    
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
