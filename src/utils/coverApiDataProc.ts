@@ -1,4 +1,3 @@
-import { isReturnStatement } from "typescript";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
 import Protocol from "../interfaces/Protocol";
 import api from "../utils/api.json";
@@ -56,28 +55,50 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
         let poolIDClaim: string = getMostRelevantPool(true, pools);
         let poolIDNoClaim: string = getMostRelevantPool(false, pools);
 
-        if (record.protocolData.poolData && record.protocolData.poolData[poolIDClaim] && record.protocolData.poolData[poolIDNoClaim]) {
-            records.push({
-                timestamp: record.timestamp,
-                claim: {
-                    price: record.protocolData.poolData[poolIDClaim].price,
-                    swapVol: record.protocolData.poolData[poolIDClaim].totalSwapFee - lastClaimVol,
-                    swapVolCum: record.protocolData.poolData[poolIDClaim].totalSwapFee,
-                    liquidity: record.protocolData.poolData[poolIDClaim].liquidity,
-                    poolId: poolIDClaim
-                },
-                noclaim: {
-                    price: record.protocolData.poolData[poolIDNoClaim].price,
-                    swapVol: record.protocolData.poolData[poolIDNoClaim].totalSwapFee - lastNoClaimVol,
-                    swapVolCum: record.protocolData.poolData[poolIDNoClaim].totalSwapFee,
-                    liquidity: record.protocolData.poolData[poolIDNoClaim].liquidity,
-                    poolId: poolIDNoClaim
-                },
-                collateralStakedValue: record.protocolData.coverObjects[0].collateralStakedValue
-            });
+        if (record.protocolData.poolData) {
+            if(record.protocolData.poolData[poolIDClaim] && record.protocolData.poolData[poolIDNoClaim]) {
+                records.push({
+                    timestamp: record.timestamp,
+                    claim: {
+                        price: record.protocolData.poolData[poolIDClaim].price,
+                        swapVol: record.protocolData.poolData[poolIDClaim].totalSwapFee - lastClaimVol,
+                        swapVolCum: record.protocolData.poolData[poolIDClaim].totalSwapFee,
+                        liquidity: record.protocolData.poolData[poolIDClaim].liquidity,
+                        poolId: poolIDClaim
+                    },
+                    noclaim: {
+                        price: record.protocolData.poolData[poolIDNoClaim].price,
+                        swapVol: record.protocolData.poolData[poolIDNoClaim].totalSwapFee - lastNoClaimVol,
+                        swapVolCum: record.protocolData.poolData[poolIDNoClaim].totalSwapFee,
+                        liquidity: record.protocolData.poolData[poolIDNoClaim].liquidity,
+                        poolId: poolIDNoClaim
+                    },
+                    collateralStakedValue: record.protocolData.coverObjects[0].collateralStakedValue
+                });
+                lastClaimVol = record.protocolData.poolData[poolIDClaim].totalSwapFee;
+                lastNoClaimVol = record.protocolData.poolData[poolIDNoClaim].totalSwapFee;
+            } else if (record.protocolData.poolData[poolIDClaim] === undefined && record.protocolData.poolData[poolIDNoClaim]) {
+                records.push({
+                    timestamp: record.timestamp,
+                    claim: {
+                        price: 1 - record.protocolData.poolData[poolIDNoClaim].price,
+                        swapVol: -1,
+                        swapVolCum: -1,
+                        liquidity: .1,
+                        poolId: poolIDClaim
+                    },
+                    noclaim: {
+                        price: record.protocolData.poolData[poolIDNoClaim].price,
+                        swapVol: record.protocolData.poolData[poolIDNoClaim].totalSwapFee - lastNoClaimVol,
+                        swapVolCum: record.protocolData.poolData[poolIDNoClaim].totalSwapFee,
+                        liquidity: record.protocolData.poolData[poolIDNoClaim].liquidity,
+                        poolId: poolIDNoClaim
+                    },
+                    collateralStakedValue: record.protocolData.coverObjects[0].collateralStakedValue
+                });
+                lastNoClaimVol = record.protocolData.poolData[poolIDNoClaim].totalSwapFee;
+            }
             
-            lastClaimVol = record.protocolData.poolData[poolIDClaim].totalSwapFee;
-            lastNoClaimVol = record.protocolData.poolData[poolIDNoClaim].totalSwapFee;
         }
     }
     // need to remove the first entry because of cummulated volume data
@@ -89,7 +110,7 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
 export const getAllTimeseriesDataOfProtocol = async (protocol: string) => {
     let items : any[] = [];
     const currentTime = new Date().getTime();
-    let startTimestamp = 0;
+    let startTimestamp = 1615378793000;    // date of which test data has been cleared from API
     
     while(currentTime - startTimestamp > 1000 * 60 * 60) {
         const response = await fetch(`${api.cover_api.timeseries_endpoint}?startTimestamp=${startTimestamp}&endTimestamp=${currentTime}&protocol=${protocol}`);

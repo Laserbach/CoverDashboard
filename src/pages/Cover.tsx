@@ -10,6 +10,7 @@ import api from "../utils/api.json";
 import ProtocolVolumeChart from '../components/ProtocolVolumeChart';
 import ProtocolPriceChart from '../components/ProtocolPriceChart';
 import ProtocolLiquidityChart from '../components/ProtocolLiquidityChart';
+import ProtocolPriceChartCombined from '../components/ProtocolPriceChartCombined';
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
 import {apiDataToTimeseriesRecords, getMostRelevantPoolBySymbol, getAllTimeseriesDataOfProtocol} from "../utils/coverApiDataProc";
@@ -79,6 +80,7 @@ const Cover: FC<PropsProtocol> = (props) => {
   const [chartTypeSelected = chartTypes[0], setChartType] = useState<string>();
   const [chartTimeSelected = chartTimes[3], setChartTime] = useState<string>();
   const [tokens, setTokensInWalletsAndPools] = useState<tokensInWalletsAndPools>();
+  const [isMigrated, setIsMigrated] = useState<boolean>(false);
   
 
   const ListChartTypes = (props: any) => {
@@ -90,6 +92,18 @@ const Cover: FC<PropsProtocol> = (props) => {
     );
     return (
       <Grid item xs={5} justify="flex-start" container>{types}</Grid>
+    );
+  }
+
+  const ListOnlyPriceChartType = (props: any) => {
+    let chartType = chartTypes[0];
+    return (
+      <Grid item xs={5} justify="flex-start" container>
+        <Button key={chartType} variant={(chartTypeSelected === chartType) ? "contained" : "outlined"} color={props.color} 
+          size="small" onClick={() => setChartType(chartType)}>
+          {chartType}
+        </Button>
+      </Grid>
     );
   }
 
@@ -109,11 +123,17 @@ const Cover: FC<PropsProtocol> = (props) => {
     if (timeseriesData) {
       switch(chartType) {
         case chartTypes[0]:
-          return (
-            <ProtocolPriceChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
-                  chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
-                    fillColorBrush={"#323342"}/>
-          );
+          if(isMigrated === true) {
+            return (
+              <ProtocolPriceChartCombined data={timeseriesData} textColor={theme.palette.text.primary} theme={theme} chartTime={chartTimeSelected || chartTimes[3]} />
+            );
+          } else {
+            return (
+              <ProtocolPriceChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
+                    chartTime={chartTimeSelected || chartTimes[3]} data={timeseriesData} xAxisDataKey="timestamp" lineDataKey={`${type.toLowerCase()}.price`}
+                      fillColorBrush={"#323342"}/>
+            );
+          }
         case chartTypes[1]:
           return (
             <ProtocolVolumeChart textColor={theme.palette.text.primary} fillColor={(type.toLowerCase() === "claim") ? theme.palette.primary.main : theme.palette.secondary.main}
@@ -227,9 +247,14 @@ const Cover: FC<PropsProtocol> = (props) => {
         if(selectedProtocol === undefined) return;
         let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, true, data.poolData);
         let [poolIdNoClaim, noClaimTokenAddr] = getMostRelevantPoolBySymbol(selectedProtocol.protocolName, false, data.poolData);
-        setSwapFeeClaim(data.poolData[poolIdClaim].poolId.swapFee);
-        setSwapFeeNoClaim(data.poolData[poolIdNoClaim].poolId.swapFee);
         let pools = [poolIdClaim, poolIdNoClaim];
+        if(data.poolData[poolIdClaim] === undefined) {
+            pools = [poolIdNoClaim];
+            setIsMigrated(true);
+        } else {
+          setSwapFeeClaim(data.poolData[poolIdClaim].poolId.swapFee);
+        }
+        setSwapFeeNoClaim(data.poolData[poolIdNoClaim].poolId.swapFee);
         let graphRequests = pools.map(poolId => fetch(api.the_graph_api.base_url, {
           method: "POST",
           mode: "cors",
@@ -285,67 +310,68 @@ const Cover: FC<PropsProtocol> = (props) => {
   return (
     <div>
       {timeseriesData ? (
-      <div>
-        <Grid container spacing={3} justify="space-evenly">
-          <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Grid className={classes.heading} container justify="center" alignItems="center">
-                  <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={getImageSrcOfProtocol(props.match.params.cover)}/>
-                  <Typography variant="h4" gutterBottom>
-                        {props.match.params.cover.toUpperCase()} Token
-                  </Typography>
-                </Grid>           
-              </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.paper}>
-              <Grid container justify="center">
-                <Grid item>
-                  <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).claim.poolId}>
-                    <Typography variant="h5" gutterBottom>
-                      CLAIM Token
+        <div>
+          <Grid container spacing={3} justify="space-evenly">
+            <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                  <Grid className={classes.heading} container justify="center" alignItems="center">
+                    <Avatar className={classes.avatar} alt={`${props.match.params.cover} Token`} src={getImageSrcOfProtocol(props.match.params.cover)}/>
+                    <Typography variant="h4" gutterBottom>
+                          {props.match.params.cover.toUpperCase()} Token
                     </Typography>
+                  </Grid>           
+                </Paper>
+            </Grid>
+            <Grid item xs={12} md={ (isMigrated === true) ? 12 : 6}>
+              <Paper className={classes.paper}>
+                <Grid container justify="center">
+                  <Grid item>
+                  <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
+                    <Typography variant="h5" gutterBottom>
+                    NOCLAIM Token
+                  </Typography>
                   </Link>
                   </Grid>
                 </Grid>
                 <Grid container justify="space-between" alignItems="center">
-                <ListChartTypes color="primary" />
-                <ListChartTimes color="primary" />
-                <Grid item xs={12}>
-                  {renderChart(chartTypeSelected, "CLAIM")}
+                  <ListChartTypes color="secondary" />
+                  <ListChartTimes color="secondary" />
+                  <Grid item xs={12}>
+                    {renderChart(chartTypeSelected, "NOCLAIM")}
+                  </Grid>
                 </Grid>
+              </Paper>
+              <Grid item xs={12} container justify="space-between">
+                {renderChartInfo("noclaim", timeseriesData)}
               </Grid>
-            </Paper>
-            <Grid item xs={12} container justify="space-between">
-              {renderChartInfo("claim", timeseriesData)}
             </Grid>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.paper}>
-              <Grid container justify="center">
-                <Grid item>
-                <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).noclaim.poolId}>
-                  <Typography variant="h5" gutterBottom>
-                  NOCLAIM Token
-                </Typography>
-                </Link>
+            {(isMigrated === true) ? (<div></div>):(
+              <Grid item xs={12} md={6}>
+              <Paper className={classes.paper}>
+                <Grid container justify="center">
+                  <Grid item>
+                    <Link color="inherit" href={api.balancer_pools.base_url+getNewestRecord(timeseriesData).claim.poolId}>
+                      <Typography variant="h5" gutterBottom>
+                        CLAIM Token
+                      </Typography>
+                    </Link>
+                  </Grid>
+                  </Grid>
+                  <Grid container justify="space-between" alignItems="center">
+                  <ListChartTypes color="primary" />
+                  <ListChartTimes color="primary" />
+                  <Grid item xs={12}>
+                    {renderChart(chartTypeSelected, "CLAIM")}
+                  </Grid>
                 </Grid>
+              </Paper>
+              <Grid item xs={12} container justify="space-between">
+                {renderChartInfo("claim", timeseriesData)}
               </Grid>
-              <Grid container justify="space-between" alignItems="center">
-                <ListChartTypes color="secondary" />
-                <ListChartTimes color="secondary" />
-                <Grid item xs={12}>
-                  {renderChart(chartTypeSelected, "NOCLAIM")}
-                </Grid>
-              </Grid>
-            </Paper>
-            <Grid item xs={12} container justify="space-between">
-              {renderChartInfo("noclaim", timeseriesData)}
             </Grid>
+            )}
           </Grid>
-        </Grid>
-      </div>
-      ): (
+        </div>):(
         <LinearProgress color="primary" />
       )}
     </div>

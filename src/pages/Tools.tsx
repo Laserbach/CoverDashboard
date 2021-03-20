@@ -11,6 +11,7 @@ import api from "../utils/api.json";
 import Protocol from "../interfaces/Protocol";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { LinearProgress } from "@material-ui/core";
+import {isProtocolActive} from "../utils/coverApiDataProc";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -62,7 +63,8 @@ const Tools = () => {
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
-        let protocols = data.protocols.filter((protocol: Protocol) => protocol.protocolActive === true && protocol.protocolTokenAddress != "");
+        let currentTime = Math.round(new Date().getTime() / 1000);
+        let protocols = data.protocols.filter((protocol: Protocol) => isProtocolActive(protocol, currentTime) === true && protocol.protocolTokenAddress != "");
         protocols.sort((pA: Protocol, pB: Protocol) => {
           if (pA.protocolName < pB.protocolName) { return -1; }
           if (pA.protocolName > pB.protocolName) { return  1; }
