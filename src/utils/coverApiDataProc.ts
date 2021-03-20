@@ -1,5 +1,6 @@
 import { isReturnStatement } from "typescript";
 import TimeseriesRecord from "../interfaces/TimeseriesRecord";
+import Protocol from "../interfaces/Protocol";
 import api from "../utils/api.json";
 
 const SYMBOL_CLAIM_IDENTIFIER = "_CLAIM";
@@ -179,4 +180,14 @@ export const setCSVsForAnyTimestamp = (records: TimeseriesRecord[], timestamps: 
             indexLastRecordUsed++;
         }
     }
+}
+
+/**
+ * Checks whether a protocol has an active coverage by COVER
+ * @param protocol listed protocol on https://api.coverprotocol.com/protocol_data/production/
+ * @param currentTime current timestamp in seconds
+ */
+export const isProtocolActive = (protocol: Protocol, currentTime: number) => {
+    let nonExpiredTimestamps = protocol.expirationTimestamps.filter((timestamp: number) => timestamp > currentTime);
+    return nonExpiredTimestamps.length > 0;
 }

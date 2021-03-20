@@ -4,6 +4,7 @@ import ProtocolPreviewCard from "../components/ProtocolPreviewCard";
 import Protocol from "../interfaces/Protocol";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
+import { isProtocolActive } from "../utils/coverApiDataProc";
 
 const Covers = () => {
   const [protocols, setProtocols] = useState<Protocol[]>();
@@ -17,7 +18,8 @@ const Covers = () => {
     fetch(api.cover_api.base_url)
       .then((response) => response.json())
       .then((data) => {
-        let protocols = data.protocols.filter((protocol: Protocol) => protocol.protocolName);
+        let currentTime = Math.round(new Date().getTime() / 1000);
+        let protocols = data.protocols.filter((protocol: Protocol) => isProtocolActive(protocol, currentTime));
         protocols.sort((pA: Protocol, pB: Protocol) => {
           if (pA.protocolName < pB.protocolName) { return -1; }
           if (pA.protocolName > pB.protocolName) { return 1;  }
