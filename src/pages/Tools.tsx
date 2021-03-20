@@ -64,7 +64,7 @@ const Tools = () => {
       .then((response) => response.json())
       .then((data) => {
         let currentTime = Math.round(new Date().getTime() / 1000);
-        let protocols = data.protocols.filter((protocol: Protocol) => isProtocolActive(protocol, currentTime) === true && protocol.protocolTokenAddress != "");
+        let protocols = data.protocols.filter((protocol: Protocol) => isProtocolActive(protocol, currentTime) === true);
         protocols.sort((pA: Protocol, pB: Protocol) => {
           if (pA.protocolName < pB.protocolName) { return -1; }
           if (pA.protocolName > pB.protocolName) { return  1; }
