@@ -30,7 +30,7 @@ import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
 
 import Home from "./pages/Home";
 import Covers from "./pages/Covers";
-import Cover from "./pages/Cover";
+import ProtocolCovered from "./pages/ProtocolCovered";
 import Tools from "./pages/Tools";
 import CoverProtocol from "./pages/CoverProtocol";
 import { Divider } from "@material-ui/core";
@@ -261,7 +261,7 @@ const App: React.FC = () => {
             <Route path="/covers" exact>
               <Covers />
             </Route>
-            <Route path="/covers/:cover" exact component={Cover} />
+            <Route path="/covers/:cover" exact component={ProtocolCovered} />
             <Route path="/tools" exact>
               <Tools />
             </Route>

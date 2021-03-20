@@ -54,6 +54,18 @@ export const getMostRelevantPoolBySymbol = (
   return [poolId, claimTokenAddr];
 };
 
+const findMostRecentCoverObject = (coverObjects: any[]) => {
+  let nonceMax: number = -1;
+  let coverObj: any = {};
+  for (let coverObject of coverObjects) {
+    if(coverObject.nonce >= nonceMax) {
+      coverObj = coverObject;
+      nonceMax = coverObj.nonce;
+    }
+  }
+  return coverObj;
+}
+
 export const apiDataToTimeseriesRecords = (data: any[]) => {
   let records: TimeseriesRecord[] = [];
   let lastClaimVol: number = 0;
@@ -63,6 +75,7 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
     let pools = record.protocolData.poolData;
     let poolIDClaim: string = getMostRelevantPool(true, pools);
     let poolIDNoClaim: string = getMostRelevantPool(false, pools);
+    let relevantCoverObject = findMostRecentCoverObject(record.protocolData.coverObjects);
 
     if (record.protocolData.poolData) {
       if (
@@ -91,7 +104,7 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
             poolId: poolIDNoClaim,
           },
           collateralStakedValue:
-            record.protocolData.coverObjects[0].collateralStakedValue,
+            relevantCoverObject.collateralStakedValue,
         });
         lastClaimVol = record.protocolData.poolData[poolIDClaim].totalSwapFee;
         lastNoClaimVol =
@@ -106,8 +119,8 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
             price: 1 - record.protocolData.poolData[poolIDNoClaim].price,
             swapVol: -1,
             swapVolCum: -1,
-            liquidity: 0.1,
-            poolId: poolIDClaim,
+            liquidity: -1,
+            poolId: "none",
           },
           noclaim: {
             price: record.protocolData.poolData[poolIDNoClaim].price,
@@ -120,11 +133,31 @@ export const apiDataToTimeseriesRecords = (data: any[]) => {
             poolId: poolIDNoClaim,
           },
           collateralStakedValue:
-            record.protocolData.coverObjects[0].collateralStakedValue,
+            relevantCoverObject.collateralStakedValue,
         });
         lastNoClaimVol =
           record.protocolData.poolData[poolIDNoClaim].totalSwapFee;
       }
+    } else {
+      records.push({
+        timestamp: record.timestamp,
+        claim: {
+          price: -1,
+          swapVol: -1,
+          swapVolCum: -1,
+          liquidity: -1,
+          poolId: "none",
+        },
+        noclaim: {
+          price: -1,
+          swapVol: -1,
+          swapVolCum: -1,
+          liquidity: -1,
+          poolId: "none",
+        },
+        collateralStakedValue:
+          relevantCoverObject.collateralStakedValue,
+      });
     }
   }
   // need to remove the first entry because of cummulated volume data

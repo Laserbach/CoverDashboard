@@ -8,15 +8,6 @@ export const getImageSrcOfProtocol = (protocolName: string) => {
     case "badgerdao":
       imgURLIdentifier = "badger";
       break;
-    case "cds_rcweth":
-      imgURLIdentifier = "ruler";
-      break;
-    case "cds_rccover":
-      imgURLIdentifier = "ruler";
-      break;
-    case "cds_rcwbtc":
-      imgURLIdentifier = "ruler";
-      break;
     default:
       break;
   }

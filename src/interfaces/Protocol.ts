@@ -12,4 +12,5 @@ export default interface Protocol {
   protocolUrl: string;
   protocolDisplayName: string;
   coverObjects: CoverObject[];
+  migrated: boolean;
 }

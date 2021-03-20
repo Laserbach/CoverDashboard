@@ -4,7 +4,7 @@ import ProtocolPreviewCard from "../components/ProtocolPreviewCard";
 import Protocol from "../interfaces/Protocol";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from "../utils/api.json";
-import { isProtocolActive } from "../utils/coverApiDataProc";
+import { isProtocolActive, getMostRelevantPoolBySymbol } from "../utils/coverApiDataProc";
 
 const Covers = () => {
   const [protocols, setProtocols] = useState<Protocol[]>();
@@ -25,6 +25,14 @@ const Covers = () => {
           if (pA.protocolName > pB.protocolName) { return 1;  }
           return 0;
         });
+        protocols.forEach((protocol: Protocol) => {
+          let [poolIdClaim, claimTokenAddr] = getMostRelevantPoolBySymbol(
+            protocol.protocolName,
+            true,
+            data.poolData
+          );
+          protocol.migrated = data.poolData[poolIdClaim] == undefined;
+        })
         setProtocols(protocols);
       });
       
@@ -40,7 +48,7 @@ const Covers = () => {
             style={{ width: (width > 600) ? "300px" : "50%" }}
             key={protocolData.protocolName}
           >
-            <ProtocolPreviewCard protocolData={protocolData}  />
+            <ProtocolPreviewCard protocolData={protocolData} />
           </Grid>
         ))}
       </Grid>

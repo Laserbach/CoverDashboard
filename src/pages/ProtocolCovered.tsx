@@ -78,7 +78,7 @@ interface tokensInWalletsAndPools {
   };
 }
 
-const Cover: FC<PropsProtocol> = (props) => {
+const ProtocolCovered: FC<PropsProtocol> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const chartTimes: string[] = getAllTimes();
@@ -109,23 +109,6 @@ const Cover: FC<PropsProtocol> = (props) => {
     return (
       <Grid item xs={5} justify="flex-start" container>
         {types}
-      </Grid>
-    );
-  };
-
-  const ListOnlyPriceChartType = (props: any) => {
-    let chartType = chartTypes[0];
-    return (
-      <Grid item xs={5} justify="flex-start" container>
-        <Button
-          key={chartType}
-          variant={chartTypeSelected === chartType ? "contained" : "outlined"}
-          color={props.color}
-          size="small"
-          onClick={() => setChartType(chartType)}
-        >
-          {chartType}
-        </Button>
       </Grid>
     );
   };
@@ -253,9 +236,7 @@ const Cover: FC<PropsProtocol> = (props) => {
             <Paper className={classes.paper} style={{ marginTop: "10px" }}>
               <Grid container justify="space-between" alignContent="center">
                 <p className={classes.infoCard}>Total Amount of Swap Fees</p>
-                {type === "claim" &&
-                swapFeePercentClaim &&
-                swapFeePercentNoClaim ? (
+                {type === "claim" && swapFeePercentClaim ? (
                   <p className={classes.infoCard}>
                     {formatCurrency(
                       getNewestRecord(records)[type].swapVolCum *
@@ -446,11 +427,54 @@ const Cover: FC<PropsProtocol> = (props) => {
                     src={getImageSrcOfProtocol(props.match.params.cover)}
                   />
                   <Typography variant="h4" gutterBottom>
-                    {props.match.params.cover.toUpperCase()} Token
+                    {`${props.match.params.cover.toUpperCase()} Token`} 
                   </Typography>
                 </Grid>
               </Paper>
             </Grid>
+            {isMigrated === true && timeseriesData ? (
+              <Grid container item xs={12}
+              style={{ paddingTop: 0, paddingBottom: 0 }}>
+                <Grid item xs={12} sm={6}>
+                  <Paper
+                    className={classes.paper}
+                  >
+                    <Grid
+                      container
+                      justify="space-between"
+                      alignContent="center"
+                    >
+                      <p className={classes.infoCard}>Price NOCLAIM [USD]</p>
+                      <p className={classes.infoCard}>
+                        {formatCurrency(
+                          getNewestRecord(timeseriesData).noclaim.price
+                        )}
+                      </p>
+                    </Grid>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Paper
+                    className={classes.paper}
+                  >
+                    <Grid
+                      container
+                      justify="space-between"
+                      alignContent="center"
+                    >
+                      <p className={classes.infoCard}>Price CLAIM [USD]</p>
+                      <p className={classes.infoCard}>
+                        {formatCurrency(
+                          1 - getNewestRecord(timeseriesData).noclaim.price
+                        )}
+                      </p>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              <div></div>
+            )}
             <Grid item xs={12} md={isMigrated === true ? 12 : 6}>
               <Paper className={classes.paper}>
                 <Grid container justify="center">
@@ -522,4 +546,4 @@ const Cover: FC<PropsProtocol> = (props) => {
   );
 };
 
-export default Cover;
+export default ProtocolCovered;

@@ -135,7 +135,8 @@ const Home = () => {
       });
 
       Promise.all(requests).then((allItems) => {
-        let [timestamps, allRecords] = findAllRecordsAndDistinctTimestamps(allItems); 
+        console.log(allItems);
+        let [timestamps, allRecords] = findAllRecordsAndDistinctTimestamps(allItems);
         let allCSV: number[] = new Array(timestamps.length);
         allCSV.fill(0);
 
